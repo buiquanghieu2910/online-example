@@ -1,0 +1,104 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Services\IUserService;
+use Illuminate\Http\Request;
+
+class UserController extends Controller
+{
+    public function __construct(
+        private IUserService $userService
+    ) {}
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $users = $this->userService->getPaginatedUsers(10);
+        return view('admin.users.index', compact('users'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('admin.users.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $validated['role'] = 'user';
+        $this->userService->createUser($validated);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Tạo người dùng thành công.');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(int $id)
+    {
+        $user = $this->userService->getUserWithExams($id);
+        return view('admin.users.show', compact('user'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(int $id)
+    {
+        $user = $this->userService->getUserById($id);
+        return view('admin.users.edit', compact('user'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, int $id)
+    {
+        $user = $this->userService->getUserById($id);
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username,' . $id,
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $this->userService->updateUser($id, $validated);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Cập nhật người dùng thành công.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(int $id)
+    {
+        $user = $this->userService->getUserById($id);
+        
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Không thể xóa tài khoản admin.');
+        }
+
+        $this->userService->deleteUser($id);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Xóa người dùng thành công.');
+    }
+}
