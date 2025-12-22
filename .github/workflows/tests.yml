@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - master
-      - '*.x'
-  pull_request:
-  schedule:
-    - cron: '0 0 * * *'
 
 permissions:
   contents: read
@@ -16,10 +12,39 @@ jobs:
   tests:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: online_exam_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      minio:
+        image: minio/minio
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        command: server /data
+
     strategy:
       fail-fast: true
       matrix:
-        php: [8.2, 8.3, 8.4]
+        php: [8.2, 8.3]
 
     name: PHP ${{ matrix.php }}
 
@@ -31,17 +56,49 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_pgsql, gd
           coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Install NPM dependencies
+        run: npm install
+
+      - name: Build assets
+        run: npm run build
 
       - name: Copy environment file
         run: cp .env.example .env
 
       - name: Generate app key
         run: php artisan key:generate
+
+      - name: Configure database
+        run: |
+          echo "DB_CONNECTION=pgsql" >> .env
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "DB_DATABASE=online_exam_test" >> .env
+          echo "DB_USERNAME=test_user" >> .env
+          echo "DB_PASSWORD=test_password" >> .env
+
+      - name: Configure MinIO
+        run: |
+          echo "MINIO_ACCESS_KEY=minioadmin" >> .env
+          echo "MINIO_SECRET_KEY=minioadmin" >> .env
+          echo "MINIO_REGION=us-east-1" >> .env
+          echo "MINIO_BUCKET=test-bucket" >> .env
+          echo "MINIO_ENDPOINT=http://127.0.0.1:9000" >> .env
+          echo "FILESYSTEM_DISK=minio" >> .env
+
+      - name: Run migrations
+        run: php artisan migrate --force
 
       - name: Execute tests
         run: php artisan test
