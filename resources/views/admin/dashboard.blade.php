@@ -13,7 +13,7 @@
             </div>
             <div class="ml-5 w-0 flex-1">
                 <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Tổng số đề thi</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Tổng số bài tập</dt>
                     <dd class="text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $totalExams }}</dd>
                 </dl>
             </div>
@@ -56,7 +56,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Đề thi gần đây</h3>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Bài tập gần đây</h3>
         </div>
         <div class="p-6">
             <div class="space-y-4">
@@ -69,7 +69,7 @@
                         <a href="{{ route('admin.exams.show', $exam) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">Xem</a>
                     </div>
                 @empty
-                    <p class="text-gray-500 dark:text-gray-400">Chưa có đề thi nào.</p>
+                    <p class="text-gray-500 dark:text-gray-400">Chưa có bài tập nào.</p>
                 @endforelse
             </div>
         </div>

@@ -14,6 +14,7 @@ class Exam extends Model
         'is_active',
         'start_time',
         'end_time',
+        'class_id',
     ];
 
     protected $casts = [
@@ -37,5 +38,10 @@ class Exam extends Model
         return $this->belongsToMany(User::class, 'exam_user')
             ->withTimestamps()
             ->withPivot('assigned_at');
+    }
+
+    public function schoolClass()
+    {
+        return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 }

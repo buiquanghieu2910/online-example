@@ -26,7 +26,7 @@ class ResultController extends Controller
             ->sortByDesc('completed_at')
             ->values();
 
-        return view('user.results.index', compact('results'));
+        return view('student.results.index', compact('results'));
     }
 
     public function show(int $id)
@@ -34,7 +34,7 @@ class ResultController extends Controller
         $userExam = $this->examTakingService->getResultById($id);
 
         if (!$userExam || $userExam->user_id !== Auth::id()) {
-            return redirect()->route('user.results.index')
+            return redirect()->route('student.results.index')
                 ->with('error', 'Không tìm thấy kết quả bài thi.');
         }
 
@@ -48,10 +48,10 @@ class ResultController extends Controller
 
         // If trying to view an old attempt, show error
         if ($latestAttempt && $latestAttempt->id !== $userExam->id) {
-            return redirect()->route('user.results.index')
+            return redirect()->route('student.results.index')
                 ->with('error', 'Không tìm thấy kết quả bài thi.');
         }
 
-        return view('user.results.show', compact('userExam'));
+        return view('student.results.show', compact('userExam'));
     }
 }

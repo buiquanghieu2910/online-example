@@ -9,7 +9,7 @@
             <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Lịch sử làm bài</h2>
             <p class="text-gray-600 dark:text-gray-400 mt-2">{{ $exam->title }}</p>
         </div>
-        <a href="{{ route('user.results.index') }}" 
+        <a href="{{ route('student.results.index') }}" 
             class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
             Quay lại
         </a>
@@ -45,18 +45,20 @@
     <div class="p-6">
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Danh sách các lần làm</h3>
         
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Lần</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Điểm</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ngày bắt đầu</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ngày hoàn thành</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Thời gian làm</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Hành động</th>
-                </tr>
-            </thead>
+        <!-- Desktop Table -->
+        <div class="hidden md:block overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Lần</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Điểm</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ngày bắt đầu</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ngày hoàn thành</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Thời gian làm</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Hành động</th>
+                    </tr>
+                </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 @forelse($history as $index => $attempt)
                     <tr class="{{ $index === 0 ? 'bg-blue-50 dark:bg-blue-900/20' : '' }}">
@@ -128,7 +130,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             @if($attempt->status === 'completed')
-                                <a href="{{ route('user.results.show', $attempt) }}" 
+                                <a href="{{ route('student.results.show', $attempt) }}" 
                                     class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                                     Xem chi tiết
                                 </a>
@@ -146,6 +148,94 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="md:hidden space-y-4">
+            @forelse($history as $index => $attempt)
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700 {{ $index === 0 ? 'ring-2 ring-blue-500 dark:ring-blue-400' : '' }}">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-lg font-bold text-gray-900 dark:text-white">Lần {{ $history->count() - $index }}</span>
+                            @if($index === 0)
+                                <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                                    Mới nhất
+                                </span>
+                            @endif
+                        </div>
+                        @if($attempt->status === 'completed')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                Đã hoàn thành
+                            </span>
+                        @elseif($attempt->status === 'in_progress')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+                                Đang làm
+                            </span>
+                        @else
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                Chưa làm
+                            </span>
+                        @endif
+                    </div>
+
+                    <div class="space-y-2 mb-4">
+                        @if($attempt->status === 'completed')
+                            <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Điểm:</span>
+                                <span class="text-xl font-bold {{ $attempt->score >= $exam->min_score ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                    {{ $attempt->score }}
+                                    <span class="text-sm">
+                                        @if($attempt->score >= $exam->min_score)
+                                            (Đạt)
+                                        @else
+                                            (Không đạt)
+                                        @endif
+                                    </span>
+                                </span>
+                            </div>
+                        @endif
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Bắt đầu:</span>
+                            <span class="text-sm text-gray-900 dark:text-white">{{ $attempt->started_at ? $attempt->started_at->format('d/m/Y H:i') : '-' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Hoàn thành:</span>
+                            <span class="text-sm text-gray-900 dark:text-white">{{ $attempt->completed_at ? $attempt->completed_at->format('d/m/Y H:i') : '-' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Thời gian làm:</span>
+                            @if($attempt->started_at && $attempt->completed_at)
+                                @php
+                                    $duration = $attempt->started_at->diffInMinutes($attempt->completed_at);
+                                    $hours = floor($duration / 60);
+                                    $minutes = $duration % 60;
+                                @endphp
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                    @if($hours > 0){{ $hours }} giờ @endif{{ $minutes }} phút
+                                </span>
+                            @else
+                                <span class="text-sm text-gray-500 dark:text-gray-400">-</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if($attempt->status === 'completed')
+                        <a href="{{ route('student.results.show', $attempt) }}" 
+                            class="flex items-center justify-center w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            Xem chi tiết
+                        </a>
+                    @endif
+                </div>
+            @empty
+                <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                    Chưa có lịch sử làm bài
+                </div>
+            @endforelse
+        </div>
     </div>
 </div>
 @endsection

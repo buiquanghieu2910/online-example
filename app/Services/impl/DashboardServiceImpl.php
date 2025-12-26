@@ -26,4 +26,18 @@ class DashboardServiceImpl implements IDashboardService
             'recent_results' => $this->userExamRepository->getRecentResults(10),
         ];
     }
+
+    public function getTeacherDashboardData(int $teacherId): array
+    {
+        $teacher = \App\Models\User::find($teacherId);
+        $students = $teacher ? $teacher->students()->count() : 0;
+        $exams = $this->examRepository->getTotalCount();
+        $recentExams = $this->examRepository->getRecentExams(5);
+        
+        return [
+            'total_students' => $students,
+            'total_exams' => $exams,
+            'recent_exams' => $recentExams,
+        ];
+    }
 }

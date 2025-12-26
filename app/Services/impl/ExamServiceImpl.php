@@ -54,6 +54,11 @@ class ExamServiceImpl implements IExamService
         return $this->examRepository->getExamWithQuestions($id);
     }
 
+    public function getExamWithAssignedUsers(int $id): ?Exam
+    {
+        return Exam::with('assignedUsers')->find($id);
+    }
+
     public function assignUsersToExam(int $examId, array $userIds): void
     {
         $exam = $this->examRepository->findById($examId);

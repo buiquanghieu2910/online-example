@@ -7,13 +7,14 @@
     <div class="mb-6">
         <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Lịch sử làm bài</h2>
         <p class="text-gray-600 dark:text-gray-400 mt-1">
-            Đề thi: <span class="font-semibold">{{ $exam->title }}</span> - 
+            Bài tập: <span class="font-semibold">{{ $exam->title }}</span> - 
             Người dùng: <span class="font-semibold">{{ $user->name }} ({{ $user->username }})</span>
         </p>
     </div>
 
     @if($history->count() > 0)
-        <div class="overflow-x-auto">
+        <!-- Desktop Table -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
@@ -88,6 +89,77 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="md:hidden space-y-4">
+            @foreach($history as $index => $userExam)
+                @php
+                    $duration = null;
+                    $durationMinutes = 0;
+                    $durationSeconds = 0;
+                    if ($userExam->started_at && $userExam->completed_at) {
+                        $totalSeconds = $userExam->started_at->diffInSeconds($userExam->completed_at);
+                        $durationMinutes = floor($totalSeconds / 60);
+                        $durationSeconds = $totalSeconds % 60;
+                        $duration = true;
+                    }
+                @endphp
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700 {{ $index === 0 ? 'ring-2 ring-blue-500 dark:ring-blue-400' : '' }}">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-lg font-bold text-gray-900 dark:text-white">Lần {{ $history->count() - $index }}</span>
+                            @if($index === 0)
+                                <span class="ml-2 px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                                    Mới nhất
+                                </span>
+                            @endif
+                        </div>
+                        @if($userExam->status === 'completed')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                Hoàn thành
+                            </span>
+                        @elseif($userExam->status === 'in_progress')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+                                Đang làm
+                            </span>
+                        @else
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                Chưa bắt đầu
+                            </span>
+                        @endif
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Điểm:</span>
+                            @if($userExam->score !== null)
+                                <span class="text-sm font-semibold {{ $userExam->score >= $exam->min_score ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                    {{ $userExam->score }}
+                                </span>
+                            @else
+                                <span class="text-sm text-gray-500 dark:text-gray-400">-</span>
+                            @endif
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Bắt đầu:</span>
+                            <span class="text-sm text-gray-900 dark:text-white">{{ $userExam->started_at ? $userExam->started_at->format('d/m/Y H:i') : '-' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Hoàn thành:</span>
+                            <span class="text-sm text-gray-900 dark:text-white">{{ $userExam->completed_at ? $userExam->completed_at->format('d/m/Y H:i') : '-' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Thời gian làm:</span>
+                            @if($duration !== null)
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $durationMinutes }} phút {{ $durationSeconds }} giây</span>
+                            @else
+                                <span class="text-sm text-gray-500 dark:text-gray-400">-</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
 
         <div class="mt-6">

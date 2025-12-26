@@ -24,6 +24,8 @@ interface IExamService
     
     public function getExamWithQuestions(int $id): ?Exam;
     
+    public function getExamWithAssignedUsers(int $id): ?Exam;
+    
     public function assignUsersToExam(int $examId, array $userIds): void;
     
     public function unassignUserFromExam(int $examId, int $userId): void;

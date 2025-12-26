@@ -9,7 +9,7 @@
             <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Chấm bài thi</h2>
             <p class="text-gray-600 dark:text-gray-400 mt-2">
                 Học viên: <strong>{{ $userExam->user->name }}</strong> - 
-                Đề thi: <strong>{{ $userExam->exam->title }}</strong>
+                Bài tập: <strong>{{ $userExam->exam->title }}</strong>
             </p>
         </div>
         <a href="{{ route('admin.grading.exam.users', $userExam->exam_id) }}" 

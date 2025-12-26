@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <form action="{{ route('user.exams.submit', $exam) }}" method="POST" id="examForm">
+    <form action="{{ route('student.exams.submit', $exam) }}" method="POST" id="examForm">
         @csrf
 
         @foreach($questions as $index => $question)
@@ -64,7 +64,7 @@
                 </button>
                 <button type="submit" id="submitBtn" style="display: none;"
                     class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded"
-                    onclick="return confirm('Bạn có chắc chắn muốn nộp bài?')">
+                    onclick="event.preventDefault(); showConfirmModal('Bạn có chắc chắn muốn nộp bài?', function() { document.getElementById('examForm').submit(); }, 'Xác nhận nộp bài', 'Nộp bài', 'green');">
                     Nộp bài
                 </button>
             </div>

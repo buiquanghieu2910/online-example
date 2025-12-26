@@ -43,7 +43,7 @@ class ExamController extends Controller
             }
         }
         
-        return view('user.exams.index', compact('exams'));
+        return view('student.exams.index', compact('exams'));
     }
 
     public function show(int $id)
@@ -51,13 +51,13 @@ class ExamController extends Controller
         $exam = $this->examService->getExamById($id);
         
         if (!$exam || !$exam->is_active) {
-            return redirect()->route('user.exams.index')
+            return redirect()->route('student.exams.index')
                 ->with('error', 'Kỳ thi không khả dụng.');
         }
 
         // Check if user is assigned to this exam
         if (!$exam->assignedUsers->contains(Auth::id())) {
-            return redirect()->route('user.exams.index')
+            return redirect()->route('student.exams.index')
                 ->with('error', 'Bạn không có quyền truy cập kỳ thi này.');
         }
 
@@ -65,7 +65,7 @@ class ExamController extends Controller
         $userExam = $this->examTakingService->getActiveExam(Auth::user(), $exam);
 
         if ($userExam) {
-            return redirect()->route('user.exams.take', $id);
+            return redirect()->route('student.exams.take', $id);
         }
 
         // Check if user has a new attempt ready (not_started)
@@ -83,12 +83,12 @@ class ExamController extends Controller
                 ->first();
 
             if ($latestCompletedAttempt) {
-                return redirect()->route('user.results.show', $latestCompletedAttempt->id)
+                return redirect()->route('student.results.show', $latestCompletedAttempt->id)
                     ->with('info', 'Bạn đã hoàn thành bài thi này.');
             }
         }
 
-        return view('user.exams.show', compact('exam'));
+        return view('student.exams.show', compact('exam'));
     }
 
     public function start(int $id)
@@ -96,7 +96,7 @@ class ExamController extends Controller
         $exam = $this->examService->getExamById($id);
         $userExam = $this->examTakingService->startExam(Auth::user(), $exam);
 
-        return redirect()->route('user.exams.take', $id);
+        return redirect()->route('student.exams.take', $id);
     }
 
     public function take(int $id)
@@ -105,7 +105,7 @@ class ExamController extends Controller
         $userExam = $this->examTakingService->getActiveExam(Auth::user(), $exam);
 
         if (!$userExam) {
-            return redirect()->route('user.exams.index')
+            return redirect()->route('student.exams.index')
                 ->with('error', 'Không tìm thấy bài thi đang thực hiện.');
         }
 
@@ -113,10 +113,10 @@ class ExamController extends Controller
         $timeRemaining = (int) ($exam->duration * 60 - now()->diffInSeconds($userExam->started_at));
         
         if ($timeRemaining <= 0) {
-            return redirect()->route('user.exams.submit', $id);
+            return redirect()->route('student.exams.submit', $id);
         }
 
-        return view('user.exams.take', compact('exam', 'userExam', 'questions', 'timeRemaining'));
+        return view('student.exams.take', compact('exam', 'userExam', 'questions', 'timeRemaining'));
     }
 
     public function submit(Request $request, int $id)
@@ -125,14 +125,14 @@ class ExamController extends Controller
         $userExam = $this->examTakingService->getActiveExam(Auth::user(), $exam);
 
         if (!$userExam) {
-            return redirect()->route('user.exams.index')
+            return redirect()->route('student.exams.index')
                 ->with('error', 'Không tìm thấy bài thi đang thực hiện.');
         }
 
         $answers = $request->input('answers', []);
         $completedExam = $this->examTakingService->submitExam($userExam, $answers);
 
-        return redirect()->route('user.results.show', $completedExam->id)
+        return redirect()->route('student.results.show', $completedExam->id)
             ->with('success', 'Nộp bài thi thành công!');
     }
 }

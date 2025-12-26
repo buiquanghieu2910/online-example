@@ -15,7 +15,7 @@
                     Thêm câu hỏi
                 </a>
                 <a href="{{ route('admin.exams.show', $exam) }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700 dark:text-gray-100 font-bold py-2 px-4 rounded">
-                    Quay lại đề thi
+                    Quay lại bài tập
                 </a>
             </div>
         </div>
@@ -40,10 +40,10 @@
                     </div>
                     <div class="flex space-x-2 ml-4">
                         <a href="{{ route('admin.questions.edit', [$exam, $question]) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">Sửa</a>
-                        <form action="{{ route('admin.questions.destroy', [$exam, $question]) }}" method="POST" class="inline">
+                        <form action="{{ route('admin.questions.destroy', [$exam, $question]) }}" method="POST" class="inline" onsubmit="return confirmDelete(this, 'Bạn có chắc chắn muốn xóa câu hỏi này?');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</button>
+                            <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Xóa</button>
                         </form>
                     </div>
                 </div>

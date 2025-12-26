@@ -26,7 +26,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('admin.users.create');
+        $teachers = \App\Models\User::where('role', 'teacher')->get();
+        return view('admin.users.create', compact('teachers'));
     }
 
     /**
@@ -38,10 +39,20 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|in:student,teacher',
+            'teacher_ids' => 'nullable|array|required_if:role,student',
+            'teacher_ids.*' => 'exists:users,id',
         ]);
 
-        $validated['role'] = 'user';
-        $this->userService->createUser($validated);
+        $teacherIds = $validated['teacher_ids'] ?? [];
+        unset($validated['teacher_ids']);
+        
+        $user = $this->userService->createUser($validated);
+        
+        // If student, attach to teachers
+        if ($user->role === 'student' && !empty($teacherIds)) {
+            $user->teachers()->attach($teacherIds);
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Tạo người dùng thành công.');
@@ -94,6 +105,11 @@ class UserController extends Controller
         if ($user->role === 'admin') {
             return redirect()->route('admin.users.index')
                 ->with('error', 'Không thể xóa tài khoản admin.');
+        }
+        
+        if ($user->role === 'teacher' && $user->students()->count() > 0) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Không thể xóa giáo viên đang có học sinh.');
         }
 
         $this->userService->deleteUser($id);

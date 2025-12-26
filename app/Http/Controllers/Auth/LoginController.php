@@ -13,8 +13,10 @@ class LoginController extends Controller
         if (Auth::check()) {
             if (Auth::user()->isAdmin()) {
                 return redirect()->route('admin.dashboard');
+            } elseif (Auth::user()->isTeacher()) {
+                return redirect()->route('teacher.dashboard');
             }
-            return redirect()->route('user.exams.index');
+            return redirect()->route('student.exams.index');
         }
         
         return view('auth.login');
@@ -32,9 +34,11 @@ class LoginController extends Controller
 
             if (Auth::user()->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'));
+            } elseif (Auth::user()->isTeacher()) {
+                return redirect()->intended(route('teacher.dashboard'));
             }
 
-            return redirect()->intended(route('user.exams.index'));
+            return redirect()->intended(route('student.exams.index'));
         }
 
         return back()->withErrors([

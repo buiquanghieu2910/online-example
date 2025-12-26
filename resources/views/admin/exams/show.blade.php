@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Xem đề thi')
+@section('title', 'Xem bài tập')
 
 @section('content')
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
@@ -146,21 +146,19 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <div class="flex items-center space-x-3">
                                     @if($userExam && $userExam->status === 'completed')
-                                        <form action="{{ route('admin.results.reset', $userExam) }}" method="POST" class="inline">
+                                        <form action="{{ route('admin.results.reset', $userExam) }}" method="POST" class="inline" onsubmit="return confirmUpdate(this, 'Bạn có chắc chắn muốn cho người dùng này làm lại bài thi?');">
                                             @csrf
                                             <button type="submit" 
-                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                                onclick="return confirm('Bạn có chắc chắn muốn cho người dùng này làm lại bài thi?')">
+                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                                                 Cho làm lại
                                             </button>
                                         </form>
                                     @endif
-                                    <form action="{{ route('admin.exams.unassign', [$exam, $user]) }}" method="POST" class="inline">
+                                    <form action="{{ route('admin.exams.unassign', [$exam, $user]) }}" method="POST" class="inline" onsubmit="return confirmDelete(this, 'Bạn có chắc chắn muốn gỡ người dùng này khỏi bài tập?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" 
-                                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                            onclick="return confirm('Bạn có chắc chắn muốn gỡ người dùng này khỏi đề thi?')">
+                                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
                                             Gỡ
                                         </button>
                                     </form>

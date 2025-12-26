@@ -9,6 +9,8 @@ interface IUserService
 {
     public function getPaginatedUsers(int $perPage = 15): LengthAwarePaginator;
     
+    public function getUsersByRole(string $role, int $perPage = 15): LengthAwarePaginator;
+    
     public function getUserById(int $id): ?User;
     
     public function getUserByUsername(string $username): ?User;
@@ -20,4 +22,6 @@ interface IUserService
     public function deleteUser(int $id): bool;
     
     public function getUserWithExams(int $id): ?User;
+    
+    public function getUsersByTeacher(int $teacherId, int $perPage = 15): LengthAwarePaginator;
 }

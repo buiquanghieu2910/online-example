@@ -19,6 +19,21 @@ class UserServiceImpl implements IUserService
         return $this->userRepository->paginate($perPage);
     }
 
+    public function getUsersByRole(string $role, int $perPage = 15): LengthAwarePaginator
+    {
+        return User::where('role', $role)->paginate($perPage);
+    }
+
+    public function getUsersByTeacher(int $teacherId, int $perPage = 15): LengthAwarePaginator
+    {
+        $teacher = User::find($teacherId);
+        if (!$teacher) {
+            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $perPage);
+        }
+        
+        return $teacher->students()->paginate($perPage);
+    }
+
     public function getUserById(int $id): ?User
     {
         return $this->userRepository->findById($id);

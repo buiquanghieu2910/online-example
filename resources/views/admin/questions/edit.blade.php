@@ -6,14 +6,14 @@
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
     <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Chỉnh sửa câu hỏi cho: {{ $exam->title }}</h2>
 
-    <form action="{{ route('admin.questions.update', [$exam, $question]) }}" method="POST" id="questionForm" enctype="multipart/form-data">
+    <form action="{{ route('admin.questions.update', [$exam, $question]) }}" method="POST" id="questionForm" enctype="multipart/form-data" onsubmit="return confirmUpdate(this, 'Bạn có chắc chắn muốn cập nhật câu hỏi này?');">
         @csrf
         @method('PUT')
 
         <div class="mb-4">
             <label for="question_text" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Câu hỏi</label>
             <textarea name="question_text" id="question_text" rows="3" required
-                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('question_text') border-red-500 @enderror">{{ old('question_text', $question->question_text) }}</textarea>
+                class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200 @error('question_text') border-red-500 @enderror">{{ old('question_text', $question->question_text) }}</textarea>
             @error('question_text')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
@@ -47,7 +47,7 @@
             <div>
                 <label for="question_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Loại câu hỏi</label>
                 <select name="question_type" id="question_type" required onchange="updateAnswerFields()"
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200">
                     <option value="multiple_choice" {{ old('question_type', $question->question_type) == 'multiple_choice' ? 'selected' : '' }}>Trắc nghiệm</option>
                     <option value="true_false" {{ old('question_type', $question->question_type) == 'true_false' ? 'selected' : '' }}>Đúng/Sai</option>
                     <option value="essay" {{ old('question_type', $question->question_type) == 'essay' ? 'selected' : '' }}>Tự luận</option>
@@ -57,13 +57,13 @@
             <div>
                 <label for="points" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Điểm</label>
                 <input type="number" name="points" id="points" value="{{ old('points', $question->points) }}" required min="1"
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200">
             </div>
 
             <div>
                 <label for="order" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Thứ tự</label>
                 <input type="number" name="order" id="order" value="{{ old('order', $question->order) }}" required min="0"
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200">
             </div>
         </div>
 
@@ -74,7 +74,7 @@
                     <div class="flex items-center mb-2 answer-row">
                         <input type="hidden" name="answers[{{ $index }}][id]" value="{{ $answer->id }}">
                         <input type="text" name="answers[{{ $index }}][answer_text]" value="{{ old("answers.$index.answer_text", $answer->answer_text) }}" placeholder="Nội dung câu trả lời" required
-                            class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200">
                         <label class="ml-3 flex items-center">
                             <input type="checkbox" name="answers[{{ $index }}][is_correct]" value="1" {{ old("answers.$index.is_correct", $answer->is_correct) ? 'checked' : '' }}
                                 class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">

@@ -158,7 +158,7 @@
         @endforeach
 
         <div class="flex justify-center mt-8">
-            <a href="{{ route('user.results.index') }}" 
+            <a href="{{ route('student.results.index') }}" 
                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
                 Quay lại kết quả
             </a>

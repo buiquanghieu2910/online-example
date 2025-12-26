@@ -6,13 +6,13 @@
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
     <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Tạo người dùng mới</h2>
 
-    <form action="{{ route('admin.users.store') }}" method="POST">
+    <form action="{{ route('admin.users.store') }}" method="POST" onsubmit="return confirmUpdate(this, 'Bạn có chắc chắn muốn tạo người dùng mới?');">
         @csrf
 
         <div class="mb-4">
             <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Họ tên</label>
             <input type="text" name="name" id="name" value="{{ old('name') }}" required
-                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('name') border-red-500 @enderror">
+                class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200 @error('name') border-red-500 @enderror">
             @error('name')
                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
             @enderror
@@ -21,8 +21,21 @@
         <div class="mb-4">
             <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
             <input type="text" name="username" id="username" value="{{ old('username') }}" required
-                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('username') border-red-500 @enderror">
+                class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200 @error('username') border-red-500 @enderror">
             @error('username')
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="mb-4">
+            <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vai trò</label>
+            <select name="role" id="role" required
+                class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200 @error('role') border-red-500 @enderror">
+                <option value="">-- Chọn vai trò --</option>
+                <option value="student" {{ old('role') === 'student' ? 'selected' : '' }}>Học sinh</option>
+                <option value="teacher" {{ old('role') === 'teacher' ? 'selected' : '' }}>Giáo viên</option>
+            </select>
+            @error('role')
                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
             @enderror
         </div>
@@ -31,7 +44,7 @@
             <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mật khẩu</label>
             <div class="relative">
                 <input type="password" name="password" id="password" required
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('password') border-red-500 @enderror pr-10">
+                    class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200 @error('password') border-red-500 @enderror pr-10">
                 <button type="button" onclick="togglePassword('password')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
                     <svg id="password-eye" class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -48,7 +61,7 @@
             <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Xác nhận mật khẩu</label>
             <div class="relative">
                 <input type="password" name="password_confirmation" id="password_confirmation" required
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10">
+                    class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200 pr-10">
                 <button type="button" onclick="togglePassword('password_confirmation')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
                     <svg id="password_confirmation-eye" class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>

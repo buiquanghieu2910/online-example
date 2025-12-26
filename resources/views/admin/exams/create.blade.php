@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Tạo đề thi')
+@section('title', 'Tạo bài tập')
 
 @section('content')
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-    <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Tạo đề thi mới</h2>
+    <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Tạo bài tập mới</h2>
 
-    <form action="{{ route('admin.exams.store') }}" method="POST" id="examForm" enctype="multipart/form-data">
+    <form action="{{ route('admin.exams.store') }}" method="POST" id="examForm" enctype="multipart/form-data" onsubmit="return confirmUpdate(this, 'Bạn có chắc chắn muốn tạo bài tập mới?');">
         @csrf
 
-        <!-- Thông tin đề thi -->
+        <!-- Thông tin bài tập -->
         <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Thông tin đề thi</h3>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Thông tin bài tập</h3>
             
             <div class="mb-4">
                 <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tiêu đề</label>
@@ -76,15 +76,19 @@
 
         <!-- Câu hỏi -->
         <div class="mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Câu hỏi</h3>
-                <button type="button" onclick="addQuestion()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm">
-                    + Thêm câu hỏi
-                </button>
-            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Câu hỏi</h3>
 
-            <div id="questionsContainer" class="space-y-6">
+            <div id="questionsContainer" class="space-y-6 mb-4">
                 <!-- Questions will be added here dynamically -->
+            </div>
+            
+            <div class="flex justify-center">
+                <button type="button" onclick="addQuestion()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-sm inline-flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Thêm câu hỏi
+                </button>
             </div>
         </div>
 
@@ -93,7 +97,7 @@
                 Hủy
             </a>
             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Tạo đề thi
+                Tạo bài tập
             </button>
         </div>
     </form>

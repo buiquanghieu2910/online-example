@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Gán người dùng cho đề thi')
+@section('title', 'Gán người dùng cho bài tập')
 
 @section('content')
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">

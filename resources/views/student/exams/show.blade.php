@@ -12,7 +12,7 @@
         @endif
 
         <div class="border-t border-b border-gray-200 dark:border-gray-700 py-6 mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Thông tin đề thi</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Thông tin bài tập</h3>
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Thời gian</p>
@@ -57,14 +57,14 @@
         </div>
 
         <div class="flex space-x-4">
-            <form action="{{ route('user.exams.start', $exam) }}" method="POST" class="flex-1">
+            <form action="{{ route('student.exams.start', $exam) }}" method="POST" class="flex-1">
                 @csrf
                 <button type="submit" 
                     class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition">
                     Bắt đầu thi
                 </button>
             </form>
-            <a href="{{ route('user.exams.index') }}" 
+            <a href="{{ route('student.exams.index') }}" 
                class="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-3 px-6 rounded-lg transition">
                 Quay lại
             </a>

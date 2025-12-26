@@ -6,14 +6,14 @@
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
     <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Sửa thông tin người dùng</h2>
 
-    <form action="{{ route('admin.users.update', $user) }}" method="POST">
+    <form action="{{ route('admin.users.update', $user) }}" method="POST" onsubmit="return confirmUpdate(this, 'Bạn có chắc chắn muốn cập nhật thông tin người dùng này?');">
         @csrf
         @method('PUT')
 
         <div class="mb-4">
             <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Họ tên</label>
             <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required
-                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('name') border-red-500 @enderror">
+                class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200 @error('name') border-red-500 @enderror">
             @error('name')
                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
             @enderror
@@ -22,7 +22,7 @@
         <div class="mb-4">
             <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
             <input type="text" id="username" value="{{ $user->username }}" disabled
-                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 shadow-sm cursor-not-allowed">
+                class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 shadow-sm cursor-not-allowed">
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Username không thể thay đổi</p>
         </div>
 
@@ -30,7 +30,7 @@
             <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mật khẩu mới (để trống nếu không đổi)</label>
             <div class="relative">
                 <input type="password" name="password" id="password"
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('password') border-red-500 @enderror pr-10">
+                    class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200 @error('password') border-red-500 @enderror pr-10">
                 <button type="button" onclick="togglePassword('password')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
                     <svg id="password-eye" class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -47,7 +47,7 @@
             <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Xác nhận mật khẩu mới</label>
             <div class="relative">
                 <input type="password" name="password_confirmation" id="password_confirmation"
-                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10">
+                    class="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors duration-200 pr-10">
                 <button type="button" onclick="togglePassword('password_confirmation')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
                     <svg id="password_confirmation-eye" class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>

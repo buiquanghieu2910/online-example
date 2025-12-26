@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Đề thi khả dụng')
+@section('title', 'Bài tập khả dụng')
 
 @section('content')
 <div class="mb-6">
-    <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Đề thi khả dụng</h2>
-    <p class="text-gray-600 dark:text-gray-400 mt-2">Chọn một đề thi để bắt đầu kiểm tra kiến thức của bạn</p>
+    <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Bài tập khả dụng</h2>
+    <p class="text-gray-600 dark:text-gray-400 mt-2">Chọn một bài tập để bắt đầu kiểm tra kiến thức của bạn</p>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -62,12 +62,12 @@
                 </div>
 
                 @if($exam->latestAttempt)
-                    <a href="{{ route('user.results.show', $exam->latestAttempt) }}" 
+                    <a href="{{ route('student.results.show', $exam->latestAttempt) }}" 
                        class="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">
                         Xem kết quả
                     </a>
                 @else
-                    <a href="{{ route('user.exams.show', $exam) }}" 
+                    <a href="{{ route('student.exams.show', $exam) }}" 
                        class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
                         Bắt đầu làm bài
                     </a>
@@ -79,8 +79,9 @@
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
-            <p class="mt-2 text-gray-500 dark:text-gray-400">Hiện tại không có đề thi nào.</p>
+            <p class="mt-2 text-gray-500 dark:text-gray-400">Hiện tại không có bài tập nào.</p>
         </div>
     @endforelse
 </div>
 @endsection
+

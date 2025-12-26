@@ -29,7 +29,8 @@ class ExamController extends Controller
      */
     public function create()
     {
-        return view('admin.exams.create');
+        $classes = \App\Models\SchoolClass::with('students')->where('is_active', true)->orderBy('name')->get();
+        return view('admin.exams.create', compact('classes'));
     }
 
     /**
@@ -45,6 +46,7 @@ class ExamController extends Controller
             'is_active' => 'boolean',
             'start_time' => 'nullable|date',
             'end_time' => 'nullable|date|after:start_time',
+            'class_id' => 'nullable|exists:classes,id',
             'questions' => 'nullable|array',
             'questions.*.question_text' => 'required_with:questions|string',
             'questions.*.question_type' => 'required_with:questions|in:multiple_choice,true_false,essay',
@@ -58,6 +60,15 @@ class ExamController extends Controller
 
         // Create exam
         $exam = $this->examService->createExam($validated);
+
+        // Auto-assign all students in the class if class_id is provided
+        if ($request->class_id) {
+            $class = \App\Models\SchoolClass::findOrFail($request->class_id);
+            $studentIds = $class->students()->pluck('id')->toArray();
+            if (!empty($studentIds)) {
+                $exam->assignedUsers()->syncWithoutDetaching($studentIds);
+            }
+        }
 
         // Create questions if provided
         if ($request->has('questions')) {
@@ -90,7 +101,7 @@ class ExamController extends Controller
         }
 
         return redirect()->route('admin.exams.show', $exam)
-            ->with('success', 'Kỳ thi đã được tạo thành công.');
+            ->with('success', 'Kỳ thi đã được tạo thành công' . ($request->class_id ? ' và tất cả học sinh trong lớp đã được phân công.' : '.'));
     }
 
     /**
@@ -184,7 +195,7 @@ class ExamController extends Controller
         $this->examService->assignUsersToExam($id, $validated['user_ids']);
 
         return redirect()->route('admin.exams.show', $id)
-            ->with('success', 'Đã gán người dùng cho đề thi.');
+            ->with('success', 'Đã gán người dùng cho bài tập.');
     }
 
     /**
@@ -195,7 +206,7 @@ class ExamController extends Controller
         $this->examService->unassignUserFromExam($examId, $userId);
 
         return redirect()->back()
-            ->with('success', 'Đã gỡ người dùng khỏi đề thi.');
+            ->with('success', 'Đã gỡ người dùng khỏi bài tập.');
     }
 
     /**
@@ -228,7 +239,7 @@ class ExamController extends Controller
         
         if (!$exam) {
             return redirect()->route('admin.grading.pending')
-                ->with('error', 'Không tìm thấy đề thi.');
+                ->with('error', 'Không tìm thấy bài tập.');
         }
 
         $pendingUserExams = \App\Models\UserExam::where('exam_id', $examId)
