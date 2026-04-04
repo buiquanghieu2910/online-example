@@ -53,7 +53,7 @@ class UserExamRepositoryImpl implements IUserExamRepository
     {
         return $this->model->where('user_id', $userId)
             ->where('exam_id', $examId)
-            ->where('status', 'in_progress')
+            ->whereIn('status', ['in_progress', 'not_started'])
             ->first();
     }
 

@@ -101,7 +101,7 @@ Hệ thống thi trực tuyến được xây dựng bằng Laravel 12, cho phé
 - **Backend**: Laravel 12.42.0
 - **Database**: PostgreSQL
 - **Storage**: MinIO
-- **Frontend**: Blade Templates + Tailwind CSS
+- **Frontend**: Vue 3 SPA + PrimeVue + Tailwind CSS (chay chung trong Laravel)
 - **Authentication**: Laravel Authentication với username
 - **Architecture**: Clean Architecture (Repository + Service Pattern)
 
@@ -114,6 +114,11 @@ Hệ thống thi trực tuyến được xây dựng bằng Laravel 12, cho phé
 - Node.js & NPM (cho Vite)
 
 ## 🚀 Cài đặt
+
+### SPA Frontend (Vue + PrimeVue)
+- SPA duoc mount tai `/app` (vi du: `/app/login`, `/app/dashboard`)
+- UI component su dung PrimeVue (DataTable, Card, Toast, Menubar)
+- API cho SPA nam duoi prefix `/api` va dung session auth cung domain
 
 ### 1. Clone repository
 ```bash

@@ -20,10 +20,18 @@ class ExamTakingServiceImpl implements IExamTakingService
 
     public function startExam(User $user, Exam $exam): UserExam
     {
-        // Check if user already has an active exam
+        // Check if user already has an active exam (in_progress or not_started)
         $activeExam = $this->userExamRepository->getActiveExamForUser($user->id, $exam->id);
         
         if ($activeExam) {
+            // If it's not_started, update to in_progress with started_at
+            if ($activeExam->status === 'not_started') {
+                $this->userExamRepository->update($activeExam->id, [
+                    'started_at' => Carbon::now(),
+                    'status' => 'in_progress',
+                ]);
+                return $activeExam->fresh();
+            }
             return $activeExam;
         }
 
@@ -33,6 +41,7 @@ class ExamTakingServiceImpl implements IExamTakingService
             'exam_id' => $exam->id,
             'started_at' => Carbon::now(),
             'status' => 'in_progress',
+            'grading_status' => 'auto_graded',
         ]);
     }
 
@@ -135,11 +144,12 @@ class ExamTakingServiceImpl implements IExamTakingService
             return false;
         }
 
-        // Create a new user exam record to allow retake (keep old record for history)
+        // Create a NEW record to allow retake (keep old record for history)
         $this->userExamRepository->create([
             'user_id' => $userExam->user_id,
             'exam_id' => $userExam->exam_id,
             'status' => 'not_started',
+            'grading_status' => 'auto_graded',
         ]);
 
         return true;

@@ -21,23 +21,33 @@ class ExamController extends Controller
         
         // Get latest attempt for each exam
         foreach ($exams as $exam) {
-            // Check if there's a new attempt ready (not_started or in_progress)
-            $newAttempt = \App\Models\UserExam::where('user_id', Auth::id())
+            // Check if there's an in-progress attempt
+            $inProgressAttempt = \App\Models\UserExam::where('user_id', Auth::id())
                 ->where('exam_id', $exam->id)
-                ->whereIn('status', ['not_started', 'in_progress'])
+                ->where('status', 'in_progress')
                 ->first();
             
-            // If there's a new attempt, don't show latest completed
-            if ($newAttempt) {
+            // Check if there's a new attempt ready (not_started)
+            $notStartedAttempt = \App\Models\UserExam::where('user_id', Auth::id())
+                ->where('exam_id', $exam->id)
+                ->where('status', 'not_started')
+                ->first();
+            
+            if ($inProgressAttempt) {
+                $exam->inProgressAttempt = $inProgressAttempt;
+                $exam->latestAttempt = null;
+                $exam->hasNewAttempt = false;
+            } elseif ($notStartedAttempt) {
+                $exam->inProgressAttempt = null;
                 $exam->latestAttempt = null;
                 $exam->hasNewAttempt = true;
             } else {
                 // Otherwise, show latest completed attempt
+                $exam->inProgressAttempt = null;
                 $exam->latestAttempt = \App\Models\UserExam::where('user_id', Auth::id())
                     ->where('exam_id', $exam->id)
                     ->where('status', 'completed')
-                    ->orderBy('completed_at', 'desc')
-                    ->orderBy('created_at', 'desc')
+                    ->orderBy('id', 'desc')
                     ->first();
                 $exam->hasNewAttempt = false;
             }
@@ -109,14 +119,72 @@ class ExamController extends Controller
                 ->with('error', 'Không tìm thấy bài thi đang thực hiện.');
         }
 
+        // Ensure exam is in progress and started_at is set
+        if ($userExam->status === 'not_started') {
+            $userExam->update([
+                'status' => 'in_progress',
+                'started_at' => now()
+            ]);
+            $userExam = $userExam->fresh();
+        } elseif (!$userExam->started_at) {
+            $userExam->update(['started_at' => now()]);
+            $userExam = $userExam->fresh();
+        }
+
         $questions = $exam->questions()->with('answers')->orderBy('order')->get();
+        
+        // Load saved answers
+        $savedAnswers = $userExam->userAnswers()->pluck('answer_id', 'question_id')->toArray();
+        $savedEssayAnswers = $userExam->userAnswers()->whereNotNull('essay_answer')->pluck('essay_answer', 'question_id')->toArray();
+        
         $timeRemaining = (int) ($exam->duration * 60 - now()->diffInSeconds($userExam->started_at));
         
         if ($timeRemaining <= 0) {
             return redirect()->route('student.exams.submit', $id);
         }
 
-        return view('student.exams.take', compact('exam', 'userExam', 'questions', 'timeRemaining'));
+        return view('student.exams.take', compact('exam', 'userExam', 'questions', 'timeRemaining', 'savedAnswers', 'savedEssayAnswers'));
+    }
+
+    public function autosave(Request $request, int $id)
+    {
+        $exam = $this->examService->getExamById($id);
+        $userExam = $this->examTakingService->getActiveExam(Auth::user(), $exam);
+
+        if (!$userExam) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy bài thi.'], 404);
+        }
+
+        $answers = $request->input('answers', []);
+        
+        // Save answers without completing the exam
+        foreach ($answers as $questionId => $answer) {
+            if ($answer !== null && $answer !== '') {
+                $answerData = [];
+                
+                // Check question type
+                $question = \App\Models\Question::find($questionId);
+                if (!$question) continue;
+                
+                if ($question->question_type === 'essay') {
+                    $answerData['essay_answer'] = $answer;
+                } else {
+                    $answerData['answer_id'] = $answer;
+                    // Check if answer is correct for auto-grading later
+                    $answerModel = $question->answers()->find($answer);
+                    if ($answerModel) {
+                        $answerData['is_correct'] = $answerModel->is_correct;
+                    }
+                }
+                
+                $userExam->userAnswers()->updateOrCreate(
+                    ['question_id' => $questionId],
+                    $answerData
+                );
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Đã lưu tự động.']);
     }
 
     public function submit(Request $request, int $id)

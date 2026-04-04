@@ -64,7 +64,7 @@ class ExamController extends Controller
 
         // Auto-assign all students in the class
         $class = \App\Models\SchoolClass::findOrFail($request->class_id);
-        $studentIds = $class->students()->pluck('id')->toArray();
+        $studentIds = $class->students()->pluck('users.id')->toArray();
         if (!empty($studentIds)) {
             $exam->assignedUsers()->syncWithoutDetaching($studentIds);
         }
@@ -118,6 +118,7 @@ class ExamController extends Controller
     public function edit(int $id)
     {
         $exam = $this->examService->getExamById($id);
+        $exam->load(['schoolClass.students']);
         return view('teacher.exams.edit', compact('exam'));
     }
 
@@ -131,10 +132,12 @@ class ExamController extends Controller
             'description' => 'nullable|string',
             'duration' => 'required|integer|min:1',
             'min_score' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
             'start_time' => 'nullable|date',
             'end_time' => 'nullable|date|after:start_time',
         ]);
+
+        // Handle checkbox - if unchecked, it won't be in the request
+        $validated['is_active'] = $request->has('is_active') ? true : false;
 
         $this->examService->updateExam($id, $validated);
 
