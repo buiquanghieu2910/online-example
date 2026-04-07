@@ -7,31 +7,23 @@ use App\Models\Exam;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 
 class ExamController extends Controller
 {
-    private function scoreColumn(): string
-    {
-        return Schema::hasColumn('exams', 'pass_score') ? 'pass_score' : 'min_score';
-    }
-
     public function index(): JsonResponse
     {
-        $scoreColumn = $this->scoreColumn();
-
         $exams = Exam::query()
             ->with('schoolClass:id,name')
             ->withCount(['questions', 'assignedUsers'])
             ->orderByDesc('created_at')
             ->get()
-            ->map(function (Exam $exam) use ($scoreColumn) {
+            ->map(function (Exam $exam) {
                 return [
                     'id' => $exam->id,
                     'title' => $exam->title,
                     'description' => $exam->description,
                     'duration' => $exam->duration,
-                    'pass_score' => (float) $exam->{$scoreColumn},
+                    'pass_score' => (float) $exam->pass_score,
                     'is_active' => (bool) $exam->is_active,
                     'start_time' => optional($exam->start_time)->toDateTimeString(),
                     'end_time' => optional($exam->end_time)->toDateTimeString(),
@@ -58,8 +50,6 @@ class ExamController extends Controller
             'class_id' => ['nullable', 'exists:classes,id'],
         ]);
 
-        $scoreColumn = $this->scoreColumn();
-
         $payload = [
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
@@ -68,7 +58,7 @@ class ExamController extends Controller
             'start_time' => $validated['start_time'] ?? null,
             'end_time' => $validated['end_time'] ?? null,
             'class_id' => $validated['class_id'] ?? null,
-            $scoreColumn => $validated['pass_score'],
+            'pass_score' => $validated['pass_score'],
         ];
 
         $exam = Exam::create($payload);
@@ -92,8 +82,6 @@ class ExamController extends Controller
             'class_id' => ['nullable', 'exists:classes,id'],
         ]);
 
-        $scoreColumn = $this->scoreColumn();
-
         $exam->update([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
@@ -102,7 +90,7 @@ class ExamController extends Controller
             'start_time' => $validated['start_time'] ?? null,
             'end_time' => $validated['end_time'] ?? null,
             'class_id' => $validated['class_id'] ?? null,
-            $scoreColumn => $validated['pass_score'],
+            'pass_score' => $validated['pass_score'],
         ]);
 
         return response()->json([

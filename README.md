@@ -183,6 +183,33 @@ php artisan serve
 
 Truy cập: `http://localhost:8000`
 
+## 🐳 Chạy Production bằng Docker
+
+Image production da gom san:
+- Laravel + PHP 8.3 (Apache)
+- Vendor Composer (`--no-dev`)
+- Frontend assets (`npm run build`)
+
+### 1) Build image
+```bash
+docker build -t online-exam:prod .
+```
+
+### 2) Chạy container
+```bash
+docker run -d --name online-exam \
+  -p 8000:80 \
+  --env-file .env \
+  -e APP_ENV=production \
+  -e APP_DEBUG=false \
+  -e RUN_MIGRATIONS=true \
+  online-exam:prod
+```
+
+Ghi chu:
+- `RUN_MIGRATIONS=true` se tu chay `php artisan migrate --force` khi start.
+- Neu ban khong muon migrate tu dong, dat `RUN_MIGRATIONS=false` va chay migrate o pipeline release.
+
 ## 📊 Cấu trúc Database
 
 ### Các bảng chính:

@@ -7,20 +7,13 @@ use App\Models\Exam;
 use App\Models\SchoolClass;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 
 class ExamController extends Controller
 {
-	private function scoreColumn(): string
-	{
-		return Schema::hasColumn('exams', 'pass_score') ? 'pass_score' : 'min_score';
-	}
-
 	public function index(Request $request): JsonResponse
 	{
 		$teacher = $request->user();
 		$classIds = $teacher->teachingClasses()->pluck('classes.id');
-		$scoreColumn = $this->scoreColumn();
 
 		$classes = $teacher->teachingClasses()->orderBy('name')->get(['classes.id', 'name']);
 
@@ -35,7 +28,7 @@ class ExamController extends Controller
 				'title' => $exam->title,
 				'description' => $exam->description,
 				'duration' => $exam->duration,
-				'pass_score' => (float) $exam->{$scoreColumn},
+				'pass_score' => (float) $exam->pass_score,
 				'is_active' => (bool) $exam->is_active,
 				'start_time' => optional($exam->start_time)->toDateTimeString(),
 				'end_time' => optional($exam->end_time)->toDateTimeString(),
@@ -72,13 +65,11 @@ class ExamController extends Controller
 			abort(403);
 		}
 
-		$scoreColumn = $this->scoreColumn();
-
 		$exam = Exam::create([
 			'title' => $validated['title'],
 			'description' => $validated['description'] ?? null,
 			'duration' => $validated['duration'],
-			$scoreColumn => $validated['pass_score'],
+			'pass_score' => $validated['pass_score'],
 			'is_active' => (bool) ($validated['is_active'] ?? true),
 			'start_time' => $validated['start_time'] ?? null,
 			'end_time' => $validated['end_time'] ?? null,
@@ -114,13 +105,11 @@ class ExamController extends Controller
 			abort(403);
 		}
 
-		$scoreColumn = $this->scoreColumn();
-
 		$exam->update([
 			'title' => $validated['title'],
 			'description' => $validated['description'] ?? null,
 			'duration' => $validated['duration'],
-			$scoreColumn => $validated['pass_score'],
+			'pass_score' => $validated['pass_score'],
 			'is_active' => (bool) ($validated['is_active'] ?? false),
 			'start_time' => $validated['start_time'] ?? null,
 			'end_time' => $validated['end_time'] ?? null,

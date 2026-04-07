@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import Card from 'primevue/card';
@@ -19,6 +19,14 @@ const form = reactive({
     username: '',
     password: '',
     remember: false,
+});
+
+onMounted(() => {
+    const message = sessionStorage.getItem('auth-expired-message');
+    if (message) {
+        toast.add({ severity: 'warn', summary: 'Vui lòng đăng nhập lại', detail: message, life: 2600 });
+        sessionStorage.removeItem('auth-expired-message');
+    }
 });
 
 async function submit() {

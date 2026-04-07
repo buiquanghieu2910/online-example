@@ -10,7 +10,7 @@ class Exam extends Model
         'title',
         'description',
         'duration',
-        'min_score',
+        'pass_score',
         'is_active',
         'start_time',
         'end_time',

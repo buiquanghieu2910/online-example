@@ -28,6 +28,12 @@ Route::post('/logout', function (Request $request) {
     return redirect('/app/login');
 })->name('logout');
 
+Route::get('/csrf-token', function (Request $request) {
+    $request->session()->regenerateToken();
+
+    return response()->json(['token' => csrf_token()]);
+});
+
 Route::middleware(['auth', 'admin'])->get('/admin/{any?}', function () {
     return redirect('/app/admin/dashboard');
 })->where('any', '.*');
