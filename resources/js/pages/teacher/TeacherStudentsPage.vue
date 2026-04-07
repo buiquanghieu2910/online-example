@@ -20,8 +20,35 @@ const editingId = ref(null);
 
 const students = ref([]);
 const form = reactive({
-    name: '', username: '', password: '', password_confirmation: '',
+    name: '',
+    username: '',
+    password: '',
+    password_confirmation: '',
 });
+const formErrors = reactive({
+    name: [],
+    username: [],
+    password: [],
+    password_confirmation: [],
+});
+
+function clearFormErrors() {
+    formErrors.name = [];
+    formErrors.username = [];
+    formErrors.password = [];
+    formErrors.password_confirmation = [];
+}
+
+function applyFormErrors(errors = {}) {
+    formErrors.name = errors.name || [];
+    formErrors.username = errors.username || [];
+    formErrors.password = errors.password || [];
+    formErrors.password_confirmation = errors.password_confirmation || [];
+}
+
+function firstError(field) {
+    return formErrors[field]?.[0] || '';
+}
 
 function resetForm() {
     editingId.value = null;
@@ -29,6 +56,7 @@ function resetForm() {
     form.username = '';
     form.password = '';
     form.password_confirmation = '';
+    clearFormErrors();
 }
 
 function openCreate() {
@@ -58,6 +86,8 @@ async function fetchData() {
 
 async function submitForm() {
     saving.value = true;
+    clearFormErrors();
+
     try {
         if (editingId.value) {
             await api.put(`/teacher/students/${editingId.value}`, form);
@@ -69,7 +99,14 @@ async function submitForm() {
         dialogVisible.value = false;
         await fetchData();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Không thể lưu học sinh', detail: error.response?.data?.message, life: 2200 });
+        applyFormErrors(error.response?.data?.errors || {});
+        const detail =
+            firstError('name') ||
+            firstError('username') ||
+            firstError('password') ||
+            firstError('password_confirmation') ||
+            error.response?.data?.message;
+        toast.add({ severity: 'error', summary: 'Không thể lưu học sinh', detail, life: 2200 });
     } finally {
         saving.value = false;
     }
@@ -117,10 +154,36 @@ onMounted(fetchData);
 
         <Dialog v-model:visible="dialogVisible" :header="editingId ? 'Cập nhật học sinh' : 'Tạo học sinh'" modal :style="{ width: '36rem' }">
             <form class="space-y-3" @submit.prevent="submitForm">
-                <InputText v-model="form.name" placeholder="Tên học sinh" required />
-                <InputText v-model="form.username" placeholder="Tên đăng nhập" required />
-                <Password v-model="form.password" :feedback="false" toggle-mask fluid :placeholder="editingId ? 'Mật khẩu (để trống nếu không đổi)' : 'Mật khẩu'" />
-                <Password v-model="form.password_confirmation" :feedback="false" toggle-mask fluid placeholder="Xác nhận mật khẩu" />
+                <div class="flex flex-col gap-2">
+                    <InputText v-model="form.name" placeholder="Tên học sinh" required :invalid="Boolean(firstError('name'))" />
+                    <small v-if="firstError('name')" class="text-red-500">{{ firstError('name') }}</small>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <InputText v-model="form.username" placeholder="Tên đăng nhập" required :invalid="Boolean(firstError('username'))" />
+                    <small v-if="firstError('username')" class="text-red-500">{{ firstError('username') }}</small>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <Password
+                        v-model="form.password"
+                        :feedback="false"
+                        toggle-mask
+                        fluid
+                        :placeholder="editingId ? 'Mật khẩu (để trống nếu không đổi)' : 'Mật khẩu'"
+                        :invalid="Boolean(firstError('password'))"
+                    />
+                    <small v-if="firstError('password')" class="text-red-500">{{ firstError('password') }}</small>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <Password
+                        v-model="form.password_confirmation"
+                        :feedback="false"
+                        toggle-mask
+                        fluid
+                        placeholder="Xác nhận mật khẩu"
+                        :invalid="Boolean(firstError('password_confirmation'))"
+                    />
+                    <small v-if="firstError('password_confirmation')" class="text-red-500">{{ firstError('password_confirmation') }}</small>
+                </div>
                 <div class="flex justify-end gap-2">
                     <Button type="button" label="Hủy" severity="secondary" text @click="dialogVisible = false" />
                     <Button type="submit" label="Lưu" :loading="saving" />
@@ -129,4 +192,3 @@ onMounted(fetchData);
         </Dialog>
     </AppShell>
 </template>
-

@@ -20,6 +20,24 @@ const form = reactive({
     password: '',
     remember: false,
 });
+const formErrors = reactive({
+    username: [],
+    password: [],
+});
+
+function clearFormErrors() {
+    formErrors.username = [];
+    formErrors.password = [];
+}
+
+function applyFormErrors(errors = {}) {
+    formErrors.username = errors.username || [];
+    formErrors.password = errors.password || [];
+}
+
+function firstError(field) {
+    return formErrors[field]?.[0] || '';
+}
 
 onMounted(() => {
     const message = sessionStorage.getItem('auth-expired-message');
@@ -31,6 +49,7 @@ onMounted(() => {
 
 async function submit() {
     loading.value = true;
+    clearFormErrors();
 
     try {
         const homePath = await authStore.login(form);
@@ -38,7 +57,8 @@ async function submit() {
         toast.add({ severity: 'success', summary: 'Đăng nhập thành công', life: 1800 });
         router.push(redirectPath);
     } catch (error) {
-        const message = error.response?.data?.message || 'Sai tài khoản hoặc mật khẩu.';
+        applyFormErrors(error.response?.data?.errors || {});
+        const message = firstError('username') || firstError('password') || error.response?.data?.message || 'Sai tài khoản hoặc mật khẩu.';
         toast.add({ severity: 'error', summary: 'Đăng nhập thất bại', detail: message, life: 2200 });
     } finally {
         loading.value = false;
@@ -54,12 +74,23 @@ async function submit() {
                 <form class="space-y-4" @submit.prevent="submit">
                     <div class="flex flex-col gap-2">
                         <label for="username" class="font-medium">Tên đăng nhập</label>
-                        <InputText id="username" v-model="form.username" autocomplete="username" required />
+                        <InputText id="username" v-model="form.username" autocomplete="username" required :invalid="Boolean(firstError('username'))" />
+                        <small v-if="firstError('username')" class="text-red-500">{{ firstError('username') }}</small>
                     </div>
 
                     <div class="flex flex-col gap-2">
                         <label for="password" class="font-medium">Mật khẩu</label>
-                        <Password id="password" v-model="form.password" :feedback="false" toggle-mask autocomplete="current-password" required fluid />
+                        <Password
+                            id="password"
+                            v-model="form.password"
+                            :feedback="false"
+                            toggle-mask
+                            autocomplete="current-password"
+                            required
+                            fluid
+                            :invalid="Boolean(firstError('password'))"
+                        />
+                        <small v-if="firstError('password')" class="text-red-500">{{ firstError('password') }}</small>
                     </div>
 
                     <Button type="submit" label="Đăng nhập" :loading="loading" class="w-full" />
@@ -68,7 +99,3 @@ async function submit() {
         </Card>
     </div>
 </template>
-
-
-
-

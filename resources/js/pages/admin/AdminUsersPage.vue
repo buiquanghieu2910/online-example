@@ -39,7 +39,38 @@ const form = reactive({
     teacher_ids: [],
 });
 
+const formErrors = reactive({
+    name: [],
+    username: [],
+    role: [],
+    password: [],
+    password_confirmation: [],
+    teacher_ids: [],
+});
+
 const dialogTitle = computed(() => (editingUserId.value ? 'Cập nhật người dùng' : 'Tạo người dùng'));
+
+function clearFormErrors() {
+    formErrors.name = [];
+    formErrors.username = [];
+    formErrors.role = [];
+    formErrors.password = [];
+    formErrors.password_confirmation = [];
+    formErrors.teacher_ids = [];
+}
+
+function applyFormErrors(errors = {}) {
+    formErrors.name = errors.name || [];
+    formErrors.username = errors.username || [];
+    formErrors.role = errors.role || [];
+    formErrors.password = errors.password || [];
+    formErrors.password_confirmation = errors.password_confirmation || [];
+    formErrors.teacher_ids = errors.teacher_ids || [];
+}
+
+function firstError(field) {
+    return formErrors[field]?.[0] || '';
+}
 
 function resetForm() {
     form.name = '';
@@ -48,6 +79,7 @@ function resetForm() {
     form.password = '';
     form.password_confirmation = '';
     form.teacher_ids = [];
+    clearFormErrors();
     editingUserId.value = null;
 }
 
@@ -87,6 +119,8 @@ async function fetchData() {
 
 async function submitForm() {
     saving.value = true;
+    clearFormErrors();
+
     try {
         if (editingUserId.value) {
             await api.put(`/admin/users/${editingUserId.value}`, form);
@@ -99,7 +133,16 @@ async function submitForm() {
         dialogVisible.value = false;
         await fetchData();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Không thể lưu người dùng', detail: error.response?.data?.message, life: 2200 });
+        applyFormErrors(error.response?.data?.errors || {});
+        const detail =
+            firstError('name') ||
+            firstError('username') ||
+            firstError('role') ||
+            firstError('password') ||
+            firstError('password_confirmation') ||
+            firstError('teacher_ids') ||
+            error.response?.data?.message;
+        toast.add({ severity: 'error', summary: 'Không thể lưu người dùng', detail, life: 2200 });
     } finally {
         saving.value = false;
     }
@@ -156,28 +199,42 @@ onMounted(fetchData);
             <form class="space-y-3" @submit.prevent="submitForm">
                 <div class="flex flex-col gap-2">
                     <label class="font-medium">Tên</label>
-                    <InputText v-model="form.name" required />
+                    <InputText v-model="form.name" required :invalid="Boolean(firstError('name'))" />
+                    <small v-if="firstError('name')" class="text-red-500">{{ firstError('name') }}</small>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-medium">Tên đăng nhập</label>
-                    <InputText v-model="form.username" required />
+                    <InputText v-model="form.username" required :invalid="Boolean(firstError('username'))" />
+                    <small v-if="firstError('username')" class="text-red-500">{{ firstError('username') }}</small>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-medium">Vai trò</label>
-                    <Select v-model="form.role" :options="roleOptions" option-label="label" option-value="value" />
+                    <Select v-model="form.role" :options="roleOptions" option-label="label" option-value="value" :invalid="Boolean(firstError('role'))" />
+                    <small v-if="firstError('role')" class="text-red-500">{{ firstError('role') }}</small>
                 </div>
                 <div v-if="form.role === 'student'" class="flex flex-col gap-2">
                     <label class="font-medium">Giáo viên phụ trách</label>
-                    <MultiSelect v-model="form.teacher_ids" :options="teachers" option-label="name" option-value="id" display="chip" fluid />
+                    <MultiSelect
+                        v-model="form.teacher_ids"
+                        :options="teachers"
+                        option-label="name"
+                        option-value="id"
+                        display="chip"
+                        fluid
+                        :invalid="Boolean(firstError('teacher_ids'))"
+                    />
+                    <small v-if="firstError('teacher_ids')" class="text-red-500">{{ firstError('teacher_ids') }}</small>
                 </div>
                 <div class="grid gap-3 md:grid-cols-2">
                     <div class="flex flex-col gap-2">
                         <label class="font-medium">Mật khẩu {{ editingUserId ? '(để trống nếu không đổi)' : '' }}</label>
-                        <Password v-model="form.password" :feedback="false" toggle-mask fluid />
+                        <Password v-model="form.password" :feedback="false" toggle-mask fluid :invalid="Boolean(firstError('password'))" />
+                        <small v-if="firstError('password')" class="text-red-500">{{ firstError('password') }}</small>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="font-medium">Xác nhận mật khẩu</label>
-                        <Password v-model="form.password_confirmation" :feedback="false" toggle-mask fluid />
+                        <Password v-model="form.password_confirmation" :feedback="false" toggle-mask fluid :invalid="Boolean(firstError('password_confirmation'))" />
+                        <small v-if="firstError('password_confirmation')" class="text-red-500">{{ firstError('password_confirmation') }}</small>
                     </div>
                 </div>
 
@@ -189,4 +246,3 @@ onMounted(fetchData);
         </Dialog>
     </AppShell>
 </template>
-
