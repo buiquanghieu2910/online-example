@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import api from '../services/api';
+import { refreshCsrfToken } from '../services/api';
 
 const roleHomeMap = {
     admin: '/app/admin/dashboard',
@@ -28,11 +29,13 @@ export const useAuthStore = defineStore('auth', {
             }
         },
         async login(credentials) {
+            await refreshCsrfToken();
             const { data } = await api.post('/auth/login', credentials);
             this.user = data.data.user;
             return data.data.home;
         },
         async logout() {
+            await refreshCsrfToken();
             await api.post('/auth/logout');
             this.user = null;
             this.isLoaded = true;
