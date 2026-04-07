@@ -26,3 +26,83 @@ jobs:
           file: Dockerfile
           push: true
           tags: ghcr.io/buiquanghieu2910/online-exam:latest
+
+  Deployment-To-VPS:
+    runs-on: ubuntu-latest
+    needs: [
+      Building-Image,
+    ]
+    steps:
+      - name: 🔄 Checkout code
+        uses: actions/checkout@v2
+
+      - name: 🚀 Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_VPS }}
+          username: ${{ secrets.USER_NAME_VPS }}
+          password: ${{ secrets.PASSWORD_VPS }}
+          script: |
+            cd ${{ secrets.PATH_REPO }}
+            # Login ghcr.io
+            docker login ghcr.io/ -u ${{ github.actor }} -p ${{ secrets.TOKEN_CREATE_IMAGE }}
+
+            # docker pull
+            docker-compose -f docker-compose.yml pull
+
+            # docker up
+            docker-compose -f docker-compose.yml up -d
+
+            # restart nginx_proxy_service
+            docker container restart nginx_proxy_service
+
+            # remove all image not use
+            docker image prune -a --force
+
+            # remove all volume not use
+            docker volume ls -qf dangling=true | xargs -r docker volume rm
+
+            # Logout ghcr.io
+            docker logout ghcr.io
+
+  Telegram-Notify:
+    runs-on: ubuntu-latest
+    needs: [
+      Building-Image,
+      Deployment-To-VPS
+    ]
+    if: always()
+
+    steps:
+      - name: 📝 Set Message
+        id: set_message
+        run: |
+          online_exam="🔴"
+
+          if [ "${{ needs.building-image.result }}" == "success" ]; then
+            online_exam="✅ Building"
+          else
+            online_exam="❌ Building"
+          fi
+
+          echo "::set-output name=online_exam::${online_exam}"
+
+
+      - name: Get current time
+        uses: josStorer/get-current-time@v2
+        id: current-time
+        with:
+          format: "YYYY-MM-DD HH:mm:ss"
+          utcOffset: "+07:00"
+
+      - name: 📱 Send Telegram Notification
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            🚀 Deploy Online Exam Completed 🚀
+
+              ⏰ Time: ${{ steps.current-time.outputs.time }}
+              📦 Task:
+                  ${{ steps.set_message.outputs.online_exam }}
