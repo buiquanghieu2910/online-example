@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import Card from 'primevue/card';
 import ProgressSpinner from 'primevue/progressspinner';
+import ProgressBar from 'primevue/progressbar';
 import Select from 'primevue/select';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
@@ -52,9 +53,9 @@ function severityForAlert(level) {
     return 'secondary';
 }
 
-function barWidth(item) {
-    const max = Math.max(1, Number(trend.value.max_attempts || 0));
-    return `${Math.max(6, Math.round((Number(item.attempts || 0) / max) * 100))}%`;
+function passRatePercent(item) {
+    const rate = Number(item.pass_rate || 0);
+    return Math.round(Math.min(100, Math.max(0, rate)));
 }
 
 function formatPercent(value) {
@@ -176,9 +177,15 @@ onMounted(fetchData);
                                     <span>{{ item.label }}</span>
                                     <span>Lượt thi: {{ item.attempts }} | Điểm TB: {{ formatScore(item.avg_score) }} | Tỷ lệ đạt: {{ formatPercent(item.pass_rate) }}</span>
                                 </div>
-                                <div class="h-2 rounded bg-slate-200 dark:bg-slate-700">
-                                    <div class="h-2 rounded bg-primary" :style="{ width: barWidth(item) }" />
-                                </div>
+<!--                                <div class="flex items-center justify-between text-[11px] text-slate-500">-->
+<!--                                    <span>Tỷ lệ đạt</span>-->
+<!--                                    <span>{{ formatPercent(item.pass_rate) }}</span>-->
+<!--                                </div>-->
+                                <ProgressBar
+                                    :value="passRatePercent(item)"
+                                    :show-value="false"
+                                    style="height: 0.5rem"
+                                    :pt="{ value: { class: 'bg-emerald-500' } }" />
                             </div>
                         </div>
                     </template>
