@@ -22,6 +22,8 @@ use App\Services\IQuestionService;
 use App\Services\IUserService;
 use App\Services\IExamTakingService;
 use App\Services\IDashboardService;
+use App\Services\IExamMonitoringService;
+use App\Services\IExamSessionService;
 
 // Service Implementations
 use App\Services\Impl\ExamServiceImpl;
@@ -29,6 +31,8 @@ use App\Services\Impl\QuestionServiceImpl;
 use App\Services\Impl\UserServiceImpl;
 use App\Services\Impl\ExamTakingServiceImpl;
 use App\Services\Impl\DashboardServiceImpl;
+use App\Services\Impl\ExamMonitoringServiceImpl;
+use App\Services\Impl\ExamSessionServiceImpl;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -49,6 +53,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(IUserService::class, UserServiceImpl::class);
         $this->app->bind(IExamTakingService::class, ExamTakingServiceImpl::class);
         $this->app->bind(IDashboardService::class, DashboardServiceImpl::class);
+        $this->app->bind(IExamMonitoringService::class, ExamMonitoringServiceImpl::class);
+        $this->app->bind(IExamSessionService::class, ExamSessionServiceImpl::class);
     }
 
     /**
