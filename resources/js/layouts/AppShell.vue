@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import Button from 'primevue/button';
 import Avatar from 'primevue/avatar';
+import Popover from 'primevue/popover';
 
 import { useAuthStore } from '../stores/auth';
 import { useThemeStore } from '../stores/theme';
@@ -19,6 +20,7 @@ const isSidebarOpen = ref(false);
 const isDesktopCollapsed = ref(false);
 const tooltip = ref({ visible: false, label: '', top: 0, left: 0 });
 const confirmLogoutVisible = ref(false);
+const colorPopover = ref();
 
 const menuItems = computed(() => {
     const role = authStore.user?.role;
@@ -64,6 +66,7 @@ const pageTitle = computed(() => {
 });
 const themeIcon = computed(() => (themeStore.isDark ? 'pi pi-sun' : 'pi pi-moon'));
 const themeTooltip = computed(() => (themeStore.isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'));
+const primeColorTooltip = computed(() => `Màu Prime hiện tại: ${themeStore.primeColor}`);
 
 const initials = computed(() => {
     if (!authStore.user?.name) {
@@ -140,6 +143,14 @@ function handleThemeToggle() {
     themeStore.toggleTheme();
 }
 
+function togglePrimeColorPopover(event) {
+    colorPopover.value?.toggle(event);
+}
+
+function selectPrimeColor(color) {
+    themeStore.setPrimeColor(color);
+}
+
 watch(
     () => route.path,
     () => hideTooltip()
@@ -171,9 +182,10 @@ watch(
                         :class="[
                             isDesktopCollapsed ? 'mx-auto h-11 w-11 justify-center px-0' : 'w-full gap-3 px-3 py-2',
                             isActive(item.to)
-                                ? 'bg-indigo-600 text-white shadow'
+                                ? 'text-white shadow'
                                 : 'text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800',
                         ]"
+                        :style="isActive(item.to) ? { backgroundColor: 'var(--p-primary-500, #3b82f6)' } : undefined"
                         @mouseenter="showTooltip($event, item.label)"
                         @mouseleave="hideTooltip"
                         @focus="showTooltip($event, item.label)"
@@ -198,6 +210,14 @@ watch(
                     </button>
                     <div class="flex items-center justify-center gap-2" :class="isDesktopCollapsed ? 'flex-col' : 'flex-row'">
                         <Button
+                            icon="pi pi-palette"
+                            :aria-label="primeColorTooltip"
+                            v-tooltip.top="primeColorTooltip"
+                            outlined
+                            size="small"
+                            class="h-10! w-10! rounded-xl!"
+                            @click="togglePrimeColorPopover" />
+                        <Button
                             :icon="themeIcon"
                             :aria-label="themeTooltip"
                             v-tooltip.top="themeTooltip"
@@ -217,6 +237,23 @@ watch(
                 </div>
             </div>
         </aside>
+
+        <Popover ref="colorPopover">
+            <div class="w-[240px] space-y-3 p-1">
+                <div class="text-sm font-medium">Chọn Prime Color</div>
+                <div class="grid grid-cols-8 gap-2">
+                    <button
+                        v-for="color in themeStore.primeColorOptions"
+                        :key="color"
+                        type="button"
+                        class="h-7 w-7 rounded-full border-2 transition"
+                        :class="themeStore.primeColor === color ? 'border-slate-900 dark:border-white' : 'border-transparent'"
+                        :style="{ backgroundColor: themeStore.primePaletteMap[color]?.[500] || '#64748b' }"
+                        @click="selectPrimeColor(color)"
+                    />
+                </div>
+            </div>
+        </Popover>
 
         <div :class="isDesktopCollapsed ? 'md:pl-20' : 'md:pl-72'">
             <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
@@ -250,12 +287,6 @@ watch(
         </div>
     </div>
 </template>
-
-
-
-
-
-
 
 
 
