@@ -75,6 +75,10 @@ function openAssign(item) {
     router.push(`/app/admin/exams/${item.id}/assign`);
 }
 
+function openAttempts(item) {
+    router.push(`/app/admin/grading/exams/${item.id}/users`);
+}
+
 function formatDateForApi(value) {
     return value ? new Date(value).toISOString() : null;
 }
@@ -158,10 +162,11 @@ onMounted(fetchData);
                     <Column header="Thao tác">
                         <template #body="slotProps">
                             <div class="flex flex-wrap gap-1">
-                                <Button icon="pi pi-list" text @click="openQuestions(slotProps.data)" />
-                                <Button icon="pi pi-users" text @click="openAssign(slotProps.data)" />
-                                <Button icon="pi pi-pencil" text @click="openEdit(slotProps.data)" />
-                                <Button icon="pi pi-trash" text severity="danger" @click="removeExam(slotProps.data)" />
+                                <Button icon="pi pi-list" v-tooltip.top="'Quản lý câu hỏi'" text @click="openQuestions(slotProps.data)" />
+                                <Button icon="pi pi-users" v-tooltip.top="'Phân công học sinh'" text @click="openAssign(slotProps.data)" />
+                                <Button icon="pi pi-history" v-tooltip.top="'Theo dõi lượt làm'" text @click="openAttempts(slotProps.data)" />
+                                <Button icon="pi pi-pencil" v-tooltip.top="'Cập nhật bài thi'" text @click="openEdit(slotProps.data)" />
+                                <Button icon="pi pi-trash" v-tooltip.top="'Xóa bài thi'" text severity="danger" @click="removeExam(slotProps.data)" />
                             </div>
                         </template>
                     </Column>
@@ -212,4 +217,3 @@ onMounted(fetchData);
         </Dialog>
     </AppShell>
 </template>
-

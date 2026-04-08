@@ -169,8 +169,8 @@ onMounted(fetchData);
                     <Column header="Thao tác">
                         <template #body="slotProps">
                             <div class="flex gap-2">
-                                <Button icon="pi pi-pencil" text @click="openEdit(slotProps.data)" />
-                                <Button icon="pi pi-trash" text severity="danger" @click="removeQuestion(slotProps.data)" />
+                                <Button icon="pi pi-pencil" v-tooltip.top="'Cập nhật câu hỏi'" text @click="openEdit(slotProps.data)" />
+                                <Button icon="pi pi-trash" v-tooltip.top="'Xóa câu hỏi'" text severity="danger" @click="removeQuestion(slotProps.data)" />
                             </div>
                         </template>
                     </Column>
@@ -198,7 +198,7 @@ onMounted(fetchData);
                             <Checkbox v-model="answer.is_correct" binary :input-id="`teacher-answer-${index}`" />
                             <label :for="`teacher-answer-${index}`">Đúng</label>
                         </div>
-                        <Button type="button" icon="pi pi-times" text severity="danger" @click="removeAnswer(index)" />
+                        <Button type="button" icon="pi pi-times" v-tooltip.top="'Xóa đáp án'" text severity="danger" @click="removeAnswer(index)" />
                     </div>
                 </div>
 
@@ -210,4 +210,3 @@ onMounted(fetchData);
         </Dialog>
     </AppShell>
 </template>
-

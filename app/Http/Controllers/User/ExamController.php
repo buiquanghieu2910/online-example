@@ -104,6 +104,11 @@ class ExamController extends Controller
     public function start(int $id)
     {
         $exam = $this->examService->getExamById($id);
+        if (!$exam || !$exam->is_active || !$exam->assignedUsers->contains(Auth::id())) {
+            return redirect()->route('student.exams.index')
+                ->with('error', 'Kỳ thi không khả dụng.');
+        }
+
         $userExam = $this->examTakingService->startExam(Auth::user(), $exam);
 
         return redirect()->route('student.exams.take', $id);

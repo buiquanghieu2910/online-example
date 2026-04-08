@@ -14,6 +14,7 @@ import AdminAssignPage from '../pages/admin/AdminAssignPage.vue';
 import AdminGradingPendingPage from '../pages/admin/AdminGradingPendingPage.vue';
 import AdminGradingExamUsersPage from '../pages/admin/AdminGradingExamUsersPage.vue';
 import AdminGradingDetailPage from '../pages/admin/AdminGradingDetailPage.vue';
+import AdminExamMonitorPage from '../pages/admin/AdminExamMonitorPage.vue';
 import TeacherClassesPage from '../pages/teacher/TeacherClassesPage.vue';
 import TeacherStudentsPage from '../pages/teacher/TeacherStudentsPage.vue';
 import TeacherExamsPage from '../pages/teacher/TeacherExamsPage.vue';
@@ -21,6 +22,7 @@ import TeacherQuestionsPage from '../pages/teacher/TeacherQuestionsPage.vue';
 import TeacherAssignPage from '../pages/teacher/TeacherAssignPage.vue';
 import TeacherAttendancePage from '../pages/teacher/TeacherAttendancePage.vue';
 import TeacherAttendanceStatsPage from '../pages/teacher/TeacherAttendanceStatsPage.vue';
+import TeacherExamMonitorPage from '../pages/teacher/TeacherExamMonitorPage.vue';
 import StudentExamsPage from '../pages/student/StudentExamsPage.vue';
 import StudentTakeExamPage from '../pages/student/StudentTakeExamPage.vue';
 import StudentResultsPage from '../pages/student/StudentResultsPage.vue';
@@ -104,6 +106,12 @@ const routes = [
         meta: { requiresAuth: true, requiresRole: ['teacher'] },
     },
     {
+        path: '/app/teacher/monitor',
+        name: 'teacher-exam-monitor',
+        component: TeacherExamMonitorPage,
+        meta: { requiresAuth: true, requiresRole: ['teacher'] },
+    },
+    {
         path: '/app/student/exams',
         name: 'student-exams',
         component: StudentExamsPage,
@@ -182,6 +190,12 @@ const routes = [
         meta: { requiresAuth: true, requiresRole: ['admin'] },
     },
     {
+        path: '/app/admin/monitor',
+        name: 'admin-exam-monitor',
+        component: AdminExamMonitorPage,
+        meta: { requiresAuth: true, requiresRole: ['admin'] },
+    },
+    {
         path: '/app/:role(admin|teacher|student)',
         redirect: '/app/dashboard',
     },
@@ -220,7 +234,6 @@ router.beforeEach(async (to) => {
 });
 
 export default router;
-
 
 
 

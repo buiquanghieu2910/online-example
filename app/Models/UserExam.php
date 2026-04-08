@@ -10,6 +10,7 @@ class UserExam extends Model
         'user_id',
         'exam_id',
         'started_at',
+        'remaining_seconds',
         'completed_at',
         'score',
         'status',
@@ -18,6 +19,7 @@ class UserExam extends Model
 
     protected $casts = [
         'started_at' => 'datetime',
+        'remaining_seconds' => 'integer',
         'completed_at' => 'datetime',
     ];
 
@@ -34,5 +36,15 @@ class UserExam extends Model
     public function userAnswers()
     {
         return $this->hasMany(UserAnswer::class);
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ExamActivityLog::class);
+    }
+
+    public function latestActivityLog()
+    {
+        return $this->hasOne(ExamActivityLog::class)->latestOfMany();
     }
 }

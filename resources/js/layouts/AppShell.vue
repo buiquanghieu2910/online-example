@@ -30,6 +30,7 @@ const menuItems = computed(() => {
             { label: 'Lớp học', icon: 'pi pi-sitemap', to: '/app/admin/classes' },
             { label: 'Bài thi', icon: 'pi pi-file-edit', to: '/app/admin/exams' },
             { label: 'Chấm bài', icon: 'pi pi-check-square', to: '/app/admin/grading/pending' },
+            { label: 'Giám sát thi', icon: 'pi pi-eye', to: '/app/admin/monitor' },
         ];
     }
 
@@ -41,6 +42,7 @@ const menuItems = computed(() => {
             { label: 'Bài thi', icon: 'pi pi-file-edit', to: '/app/teacher/exams' },
             { label: 'Điểm danh', icon: 'pi pi-calendar', to: '/app/teacher/attendances' },
             { label: 'Thống kê điểm danh', icon: 'pi pi-chart-bar', to: '/app/teacher/attendances/statistics' },
+            { label: 'Giám sát thi', icon: 'pi pi-eye', to: '/app/teacher/monitor' },
         ];
     }
 
@@ -198,12 +200,14 @@ watch(
                         <Button
                             :icon="themeIcon"
                             :aria-label="themeTooltip"
+                            v-tooltip.top="themeTooltip"
                             outlined
                             size="small"
                             class="h-10! w-10! rounded-xl!"
                             @click="handleThemeToggle" />
                         <Button
                             icon="pi pi-sign-out"
+                            v-tooltip.top="'Đăng xuất'"
                             severity="danger"
                             outlined
                             size="small"
@@ -217,7 +221,7 @@ watch(
         <div :class="isDesktopCollapsed ? 'md:pl-20' : 'md:pl-72'">
             <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
                 <div class="flex items-center gap-3">
-                    <Button icon="pi pi-bars" text @click="handleMenuToggle" />
+                    <Button icon="pi pi-bars" v-tooltip.bottom="'Mở/thu gọn menu'" text @click="handleMenuToggle" />
                     <div class="text-base font-semibold md:text-lg">{{ pageTitle }}</div>
                 </div>
             </header>
@@ -246,8 +250,6 @@ watch(
         </div>
     </div>
 </template>
-
-
 
 
 

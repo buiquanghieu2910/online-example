@@ -7,11 +7,13 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\Admin\ClassController as AdminClassController;
 use App\Http\Controllers\Api\Admin\ExamController as AdminExamController;
 use App\Http\Controllers\Api\Admin\GradingController as AdminGradingController;
+use App\Http\Controllers\Api\Admin\MonitorController as AdminMonitorController;
 use App\Http\Controllers\Api\Admin\QuestionController as AdminQuestionController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\Teacher\AttendanceController as TeacherAttendanceController;
 use App\Http\Controllers\Api\Teacher\ClassController as TeacherClassController;
 use App\Http\Controllers\Api\Teacher\ExamController as TeacherExamController;
+use App\Http\Controllers\Api\Teacher\MonitorController as TeacherMonitorController;
 use App\Http\Controllers\Api\Teacher\QuestionController as TeacherQuestionController;
 use App\Http\Controllers\Api\Teacher\StudentController as TeacherStudentController;
 use App\Http\Controllers\Api\Student\ExamController as StudentExamController;
@@ -60,6 +62,9 @@ Route::middleware('web')->group(function () {
             Route::get('/grading/exams/{exam}/users', [AdminGradingController::class, 'examUsers']);
             Route::get('/grading/{userExam}', [AdminGradingController::class, 'show']);
             Route::post('/grading/{userExam}', [AdminGradingController::class, 'submit']);
+            Route::post('/grading/{userExam}/reset', [AdminGradingController::class, 'reset']);
+            Route::get('/monitor/active-attempts', [AdminMonitorController::class, 'activeAttempts']);
+            Route::get('/monitor/active-attempts/{userExam}/timeline', [AdminMonitorController::class, 'timeline']);
         });
 
         Route::prefix('teacher')->middleware('teacher')->group(function () {
@@ -88,6 +93,8 @@ Route::middleware('web')->group(function () {
             Route::get('/attendances', [TeacherAttendanceController::class, 'index']);
             Route::post('/attendances', [TeacherAttendanceController::class, 'store']);
             Route::get('/attendances/statistics', [TeacherAttendanceController::class, 'statistics']);
+            Route::get('/monitor/active-attempts', [TeacherMonitorController::class, 'activeAttempts']);
+            Route::get('/monitor/active-attempts/{userExam}/timeline', [TeacherMonitorController::class, 'timeline']);
         });
 
         Route::prefix('student')->middleware('student')->group(function () {
@@ -95,6 +102,8 @@ Route::middleware('web')->group(function () {
             Route::get('/exams/{exam}', [StudentExamController::class, 'show']);
             Route::post('/exams/{exam}/start', [StudentExamController::class, 'start']);
             Route::get('/exams/{exam}/take', [StudentExamController::class, 'take']);
+            Route::get('/exams/{exam}/attempt-status', [StudentExamController::class, 'attemptStatus']);
+            Route::post('/exams/{exam}/timer', [StudentExamController::class, 'syncTimer']);
             Route::post('/exams/{exam}/autosave', [StudentExamController::class, 'autosave']);
             Route::post('/exams/{exam}/submit', [StudentExamController::class, 'submit']);
 
@@ -103,6 +112,3 @@ Route::middleware('web')->group(function () {
         });
     });
 });
-
-
-

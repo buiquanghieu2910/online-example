@@ -154,10 +154,10 @@ onMounted(fetchData);
                     <Column header="Thao tác">
                         <template #body="slotProps">
                             <div class="flex gap-1">
-                                <Button icon="pi pi-list" text @click="openQuestions(slotProps.data)" />
-                                <Button icon="pi pi-users" text @click="openAssign(slotProps.data)" />
-                                <Button icon="pi pi-pencil" text @click="openEdit(slotProps.data)" />
-                                <Button icon="pi pi-trash" text severity="danger" @click="removeExam(slotProps.data)" />
+                                <Button icon="pi pi-list" v-tooltip.top="'Quản lý câu hỏi'" text @click="openQuestions(slotProps.data)" />
+                                <Button icon="pi pi-users" v-tooltip.top="'Phân công học sinh'" text @click="openAssign(slotProps.data)" />
+                                <Button icon="pi pi-pencil" v-tooltip.top="'Cập nhật bài thi'" text @click="openEdit(slotProps.data)" />
+                                <Button icon="pi pi-trash" v-tooltip.top="'Xóa bài thi'" text severity="danger" @click="removeExam(slotProps.data)" />
                             </div>
                         </template>
                     </Column>
@@ -190,4 +190,3 @@ onMounted(fetchData);
         </Dialog>
     </AppShell>
 </template>
-

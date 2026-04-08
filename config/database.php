@@ -144,7 +144,12 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+        'client' => env(
+            'EXAM_REDIS_CLIENT',
+            extension_loaded('redis')
+                ? env('REDIS_CLIENT', 'phpredis')
+                : 'predis'
+        ),
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
@@ -153,12 +158,12 @@ return [
         ],
 
         'default' => [
-            'url' => env('REDIS_URL'),
-            'host' => env('REDIS_HOST', '127.0.0.1'),
-            'username' => env('REDIS_USERNAME'),
-            'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_DB', '0'),
+            'url' => env('EXAM_REDIS_URL', env('REDIS_URL')),
+            'host' => env('EXAM_REDIS_HOST', env('REDIS_HOST', '127.0.0.1')),
+            'username' => env('EXAM_REDIS_USERNAME', env('REDIS_USERNAME')),
+            'password' => env('EXAM_REDIS_PASSWORD', env('REDIS_PASSWORD')),
+            'port' => env('EXAM_REDIS_PORT', env('REDIS_PORT', '6379')),
+            'database' => env('EXAM_REDIS_DB', env('REDIS_DB', '0')),
             'max_retries' => env('REDIS_MAX_RETRIES', 3),
             'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
             'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
@@ -166,12 +171,12 @@ return [
         ],
 
         'cache' => [
-            'url' => env('REDIS_URL'),
-            'host' => env('REDIS_HOST', '127.0.0.1'),
-            'username' => env('REDIS_USERNAME'),
-            'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_CACHE_DB', '1'),
+            'url' => env('EXAM_REDIS_URL', env('REDIS_URL')),
+            'host' => env('EXAM_REDIS_HOST', env('REDIS_HOST', '127.0.0.1')),
+            'username' => env('EXAM_REDIS_USERNAME', env('REDIS_USERNAME')),
+            'password' => env('EXAM_REDIS_PASSWORD', env('REDIS_PASSWORD')),
+            'port' => env('EXAM_REDIS_PORT', env('REDIS_PORT', '6379')),
+            'database' => env('EXAM_REDIS_CACHE_DB', env('REDIS_CACHE_DB', '1')),
             'max_retries' => env('REDIS_MAX_RETRIES', 3),
             'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
             'backoff_base' => env('REDIS_BACKOFF_BASE', 100),

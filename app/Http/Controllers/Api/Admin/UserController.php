@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -37,7 +38,7 @@ class UserController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:student,teacher,admin'],
             'teacher_ids' => ['nullable', 'array'],
-            'teacher_ids.*' => ['integer', 'exists:users,id'],
+            'teacher_ids.*' => ['integer', Rule::exists('users', 'id')->where('role', 'teacher')],
         ]);
 
         $teacherIds = $validated['teacher_ids'] ?? [];
@@ -63,7 +64,7 @@ class UserController extends Controller
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:student,teacher,admin'],
             'teacher_ids' => ['nullable', 'array'],
-            'teacher_ids.*' => ['integer', 'exists:users,id'],
+            'teacher_ids.*' => ['integer', Rule::exists('users', 'id')->where('role', 'teacher')],
         ]);
 
         if (empty($validated['password'])) {
@@ -108,4 +109,3 @@ class UserController extends Controller
         ]);
     }
 }
-

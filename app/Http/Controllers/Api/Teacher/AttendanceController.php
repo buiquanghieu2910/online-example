@@ -17,14 +17,18 @@ class AttendanceController extends Controller
         $classId = $request->get('class_id');
 
         $classes = $teacher->teachingClasses()->orderBy('name')->get(['classes.id', 'name']);
+        $allowedClassIds = $classes->pluck('id')->all();
+
+        if ($classId && ! in_array((int) $classId, $allowedClassIds, true)) {
+            abort(403);
+        }
 
         $studentsQuery = User::query()->where('role', 'student');
 
         if ($classId) {
             $studentsQuery->whereHas('schoolClasses', fn ($query) => $query->where('class_id', $classId));
         } else {
-            $classIds = $classes->pluck('id');
-            $studentsQuery->whereHas('schoolClasses', fn ($query) => $query->whereIn('class_id', $classIds));
+            $studentsQuery->whereHas('schoolClasses', fn ($query) => $query->whereIn('class_id', $allowedClassIds));
         }
 
         $students = $studentsQuery
@@ -44,6 +48,8 @@ class AttendanceController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $teacher = $request->user();
+
         $validated = $request->validate([
             'date' => ['required', 'date'],
             'class_id' => ['nullable', 'exists:classes,id'],
@@ -53,14 +59,45 @@ class AttendanceController extends Controller
             'attendances.*.notes' => ['nullable', 'string'],
         ]);
 
+        $allowedClassIds = $teacher->teachingClasses()->pluck('classes.id')->all();
+        if (! empty($validated['class_id']) && ! in_array((int) $validated['class_id'], $allowedClassIds, true)) {
+            abort(403);
+        }
+
+        $allowedStudentIdsQuery = $teacher->students()->pluck('users.id');
+        if (! empty($validated['class_id'])) {
+            $allowedStudentIdsQuery = $teacher->students()
+                ->whereHas('schoolClasses', fn ($query) => $query->where('class_id', $validated['class_id']))
+                ->pluck('users.id');
+        }
+        $allowedStudentIds = $allowedStudentIdsQuery->map(fn ($id) => (int) $id)->all();
+
+        $invalidStudentIds = collect($validated['attendances'])
+            ->pluck('student_id')
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => ! in_array($id, $allowedStudentIds, true))
+            ->unique()
+            ->values()
+            ->all();
+
+        if (! empty($invalidStudentIds)) {
+            return response()->json([
+                'message' => 'Một số học sinh không thuộc phạm vi phụ trách.',
+                'errors' => [
+                    'attendances' => ['Một số học sinh không thuộc phạm vi phụ trách.'],
+                ],
+            ], 422);
+        }
+
         foreach ($validated['attendances'] as $attendance) {
+
             Attendance::updateOrCreate(
                 [
                     'student_id' => $attendance['student_id'],
                     'date' => $validated['date'],
                 ],
                 [
-                    'teacher_id' => $request->user()->id,
+                    'teacher_id' => $teacher->id,
                     'class_id' => $validated['class_id'] ?? null,
                     'status' => $attendance['status'],
                     'notes' => $attendance['notes'] ?? null,
@@ -79,6 +116,11 @@ class AttendanceController extends Controller
         $classId = $request->get('class_id');
 
         $classes = $teacher->teachingClasses()->orderBy('name')->get(['classes.id', 'name']);
+        $allowedClassIds = $classes->pluck('id')->all();
+
+        if ($classId && ! in_array((int) $classId, $allowedClassIds, true)) {
+            abort(403);
+        }
 
         $studentsQuery = User::query()->where('role', 'student');
         if ($classId) {
@@ -100,7 +142,7 @@ class AttendanceController extends Controller
         ];
 
         if ($studentId) {
-            $student = User::findOrFail($studentId);
+            $student = $teacher->students()->where('users.id', $studentId)->firstOrFail();
             $attendances = Attendance::query()
                 ->where('student_id', $studentId)
                 ->whereYear('date', substr($month, 0, 4))
@@ -122,4 +164,3 @@ class AttendanceController extends Controller
         return response()->json(['data' => $data]);
     }
 }
-

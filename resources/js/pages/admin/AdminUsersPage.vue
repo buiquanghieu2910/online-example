@@ -186,8 +186,8 @@ onMounted(fetchData);
                     <Column header="Thao tác">
                         <template #body="slotProps">
                             <div class="flex gap-2">
-                                <Button icon="pi pi-pencil" text @click="openEdit(slotProps.data)" />
-                                <Button icon="pi pi-trash" text severity="danger" @click="removeUser(slotProps.data)" />
+                                <Button icon="pi pi-pencil" v-tooltip.top="'Cập nhật người dùng'" text @click="openEdit(slotProps.data)" />
+                                <Button icon="pi pi-trash" v-tooltip.top="'Xóa người dùng'" text severity="danger" @click="removeUser(slotProps.data)" />
                             </div>
                         </template>
                     </Column>

@@ -21,7 +21,12 @@ const submitting = ref(false);
 const payload = ref(null);
 const answers = ref({});
 const timeRemaining = ref(0);
+const syncingTimer = ref(false);
+
 let timer = null;
+let deadlineAt = null;
+let lastTimerSyncAt = 0;
+let statusPollingTimer = null;
 
 const examId = computed(() => route.params.examId);
 
@@ -31,12 +36,25 @@ function formatTimer(seconds) {
     return `${min}:${sec}`;
 }
 
+function setDeadline(remainingSeconds) {
+    deadlineAt = Date.now() + Math.max(0, remainingSeconds) * 1000;
+}
+
+function getRemainingFromDeadline() {
+    if (!deadlineAt) {
+        return Math.max(0, timeRemaining.value);
+    }
+
+    return Math.max(0, Math.ceil((deadlineAt - Date.now()) / 1000));
+}
+
 async function fetchData() {
     loading.value = true;
     try {
         const { data } = await api.get(`/student/exams/${examId.value}/take`);
         payload.value = data.data;
         timeRemaining.value = data.data.time_remaining;
+        setDeadline(timeRemaining.value);
 
         const initAnswers = {};
         data.data.questions.forEach((question) => {
@@ -59,13 +77,21 @@ async function fetchData() {
 
 function startTimer() {
     stopTimer();
-    timer = setInterval(async () => {
-        if (timeRemaining.value <= 0) {
+
+    timer = setInterval(() => {
+        const nextRemaining = getRemainingFromDeadline();
+        timeRemaining.value = nextRemaining;
+
+        if (nextRemaining <= 0) {
             stopTimer();
-            await submitExam();
+            submitExam();
             return;
         }
-        timeRemaining.value -= 1;
+
+        if (Date.now() - lastTimerSyncAt >= 5000) {
+            lastTimerSyncAt = Date.now();
+            void syncTimer(false);
+        }
     }, 1000);
 }
 
@@ -76,9 +102,32 @@ function stopTimer() {
     }
 }
 
+async function syncTimer(force = false) {
+    if (syncingTimer.value || !payload.value || (!force && submitting.value)) {
+        return;
+    }
+
+    syncingTimer.value = true;
+    try {
+        const { data } = await api.post(`/student/exams/${examId.value}/timer`, {
+            time_remaining: timeRemaining.value,
+        });
+        const serverRemaining = data?.data?.time_remaining;
+        if (typeof serverRemaining === 'number') {
+            timeRemaining.value = Math.max(0, serverRemaining);
+            setDeadline(timeRemaining.value);
+        }
+    } catch {
+        // Timer sync errors should not block exam flow.
+    } finally {
+        syncingTimer.value = false;
+    }
+}
+
 async function autosave() {
     saving.value = true;
     try {
+        await syncTimer();
         await api.post(`/student/exams/${examId.value}/autosave`, { answers: answers.value });
         toast.add({ severity: 'success', summary: 'Đã lưu tạm', life: 1200 });
     } catch {
@@ -90,22 +139,93 @@ async function autosave() {
 
 async function submitExam() {
     if (submitting.value) return;
+
     submitting.value = true;
     stopTimer();
     try {
+        await syncTimer(true);
         const { data } = await api.post(`/student/exams/${examId.value}/submit`, { answers: answers.value });
         toast.add({ severity: 'success', summary: 'Nộp bài thành công', life: 1800 });
         router.push(data.data.redirect);
-    } catch {
-        toast.add({ severity: 'error', summary: 'Không thể nộp bài', life: 2200 });
+    } catch (error) {
+        const statusData = await fetchAttemptStatus(false);
+        if (statusData?.status === 'completed' && statusData.redirect) {
+            toast.add({ severity: 'warn', summary: 'Bài thi đã được hệ thống tự nộp', life: 2200 });
+            router.push(statusData.redirect);
+            return;
+        }
+
+        toast.add({ severity: 'error', summary: 'Không thể nộp bài', detail: error.response?.data?.message, life: 2200 });
+        setDeadline(timeRemaining.value);
         startTimer();
     } finally {
         submitting.value = false;
     }
 }
 
-onMounted(fetchData);
-onUnmounted(stopTimer);
+async function fetchAttemptStatus(showSubmitToast = true) {
+    if (!payload.value || submitting.value) {
+        return null;
+    }
+
+    try {
+        const { data } = await api.get(`/student/exams/${examId.value}/attempt-status`);
+        const statusData = data.data;
+
+        if (statusData.status === 'completed' && statusData.redirect) {
+            stopTimer();
+            if (showSubmitToast) {
+                toast.add({ severity: 'warn', summary: 'Bài thi đã được hệ thống tự nộp', life: 2200 });
+            }
+            await router.push(statusData.redirect);
+            return statusData;
+        }
+
+        if (statusData.status === 'in_progress' && typeof statusData.time_remaining === 'number') {
+            timeRemaining.value = Math.min(timeRemaining.value, statusData.time_remaining);
+            setDeadline(timeRemaining.value);
+        }
+
+        return statusData;
+    } catch {
+        return null;
+    }
+}
+
+function handleVisibilityChange() {
+    if (document.hidden) {
+        void syncTimer(true);
+        return;
+    }
+
+    timeRemaining.value = getRemainingFromDeadline();
+    startTimer();
+}
+
+function handleBeforeUnload() {
+    stopTimer();
+    void syncTimer(true);
+}
+
+onMounted(() => {
+    void fetchData();
+    statusPollingTimer = setInterval(() => {
+        void fetchAttemptStatus();
+    }, 10000);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+});
+
+onUnmounted(() => {
+    stopTimer();
+    void syncTimer(true);
+    if (statusPollingTimer) {
+        clearInterval(statusPollingTimer);
+        statusPollingTimer = null;
+    }
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+});
 </script>
 
 <template>
@@ -151,4 +271,3 @@ onUnmounted(stopTimer);
         </Card>
     </AppShell>
 </template>
-

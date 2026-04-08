@@ -54,6 +54,8 @@ class UserExamRepositoryImpl implements IUserExamRepository
         return $this->model->where('user_id', $userId)
             ->where('exam_id', $examId)
             ->whereIn('status', ['in_progress', 'not_started'])
+            ->orderByRaw("CASE WHEN status = 'in_progress' THEN 0 ELSE 1 END")
+            ->orderByDesc('id')
             ->first();
     }
 

@@ -22,7 +22,9 @@ RUN composer install \
 FROM php:8.4-apache AS runtime
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq-dev libzip-dev unzip \
+    && apt-get install -y --no-install-recommends libpq-dev libzip-dev unzip $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && docker-php-ext-install pdo_pgsql zip bcmath \
     && a2enmod rewrite headers \
     && echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf \
@@ -52,6 +54,5 @@ EXPOSE 80
 
 ENTRYPOINT ["app-entrypoint"]
 CMD ["apache2-foreground"]
-
 
 

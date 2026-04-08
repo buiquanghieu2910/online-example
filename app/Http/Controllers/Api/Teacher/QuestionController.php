@@ -7,6 +7,7 @@ use App\Models\Exam;
 use App\Models\Question;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class QuestionController extends Controller
 {
@@ -44,6 +45,7 @@ class QuestionController extends Controller
             'answers.*.answer_text' => ['required_with:answers', 'string'],
             'answers.*.is_correct' => ['nullable', 'boolean'],
         ]);
+        $this->validateChoiceAnswers($validated);
 
         $question = $exam->questions()->create([
             'question_text' => $validated['question_text'],
@@ -72,6 +74,7 @@ class QuestionController extends Controller
             'answers.*.answer_text' => ['required_with:answers', 'string'],
             'answers.*.is_correct' => ['nullable', 'boolean'],
         ]);
+        $this->validateChoiceAnswers($validated);
 
         $question->update([
             'question_text' => $validated['question_text'],
@@ -122,5 +125,28 @@ class QuestionController extends Controller
         $question->answers()->delete();
         $question->answers()->createMany($normalized->all());
     }
-}
 
+    private function validateChoiceAnswers(array $validated): void
+    {
+        $questionType = $validated['question_type'] ?? 'essay';
+        if ($questionType === 'essay') {
+            return;
+        }
+
+        $answers = collect($validated['answers'] ?? [])
+            ->filter(fn ($answer) => ! empty($answer['answer_text'] ?? null))
+            ->values();
+
+        if ($answers->count() < 2) {
+            throw ValidationException::withMessages([
+                'answers' => ['Cần ít nhất 2 đáp án cho câu hỏi trắc nghiệm.'],
+            ]);
+        }
+
+        if (! $answers->contains(fn ($answer) => (bool) ($answer['is_correct'] ?? false))) {
+            throw ValidationException::withMessages([
+                'answers' => ['Cần chọn ít nhất 1 đáp án đúng.'],
+            ]);
+        }
+    }
+}

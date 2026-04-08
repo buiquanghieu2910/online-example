@@ -37,6 +37,8 @@ class ClassController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $teacher = $request->user();
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', 'unique:classes,code'],
@@ -49,6 +51,18 @@ class ClassController extends Controller
             'student_ids.*' => ['integer', 'exists:users,id'],
         ]);
 
+        $allowedStudentIds = $teacher->students()->pluck('users.id')->map(fn ($id) => (int) $id)->all();
+        $studentIds = collect($validated['student_ids'] ?? [])->map(fn ($id) => (int) $id)->all();
+        $invalidStudentIds = array_values(array_diff($studentIds, $allowedStudentIds));
+        if (! empty($invalidStudentIds)) {
+            return response()->json([
+                'message' => 'Danh sách học sinh có phần tử không thuộc phạm vi phụ trách.',
+                'errors' => [
+                    'student_ids' => ['Danh sách học sinh có phần tử không thuộc phạm vi phụ trách.'],
+                ],
+            ], 422);
+        }
+
         $class = SchoolClass::create([
             'name' => $validated['name'],
             'code' => $validated['code'],
@@ -59,15 +73,17 @@ class ClassController extends Controller
             'is_active' => (bool) ($validated['is_active'] ?? true),
         ]);
 
-        $class->teachers()->sync([$request->user()->id]);
-        $class->students()->sync($validated['student_ids'] ?? []);
+        $class->teachers()->sync([$teacher->id]);
+        $class->students()->sync($studentIds);
 
         return response()->json(['message' => 'Tạo lớp học thành công.']);
     }
 
     public function update(Request $request, SchoolClass $class): JsonResponse
     {
-        if (! $class->teachers()->where('teacher_id', $request->user()->id)->exists()) {
+        $teacher = $request->user();
+
+        if (! $class->teachers()->where('teacher_id', $teacher->id)->exists()) {
             abort(403);
         }
 
@@ -83,6 +99,18 @@ class ClassController extends Controller
             'student_ids.*' => ['integer', 'exists:users,id'],
         ]);
 
+        $allowedStudentIds = $teacher->students()->pluck('users.id')->map(fn ($id) => (int) $id)->all();
+        $studentIds = collect($validated['student_ids'] ?? [])->map(fn ($id) => (int) $id)->all();
+        $invalidStudentIds = array_values(array_diff($studentIds, $allowedStudentIds));
+        if (! empty($invalidStudentIds)) {
+            return response()->json([
+                'message' => 'Danh sách học sinh có phần tử không thuộc phạm vi phụ trách.',
+                'errors' => [
+                    'student_ids' => ['Danh sách học sinh có phần tử không thuộc phạm vi phụ trách.'],
+                ],
+            ], 422);
+        }
+
         $class->update([
             'name' => $validated['name'],
             'code' => $validated['code'],
@@ -93,7 +121,7 @@ class ClassController extends Controller
             'is_active' => (bool) ($validated['is_active'] ?? false),
         ]);
 
-        $class->students()->sync($validated['student_ids'] ?? []);
+        $class->students()->sync($studentIds);
 
         return response()->json(['message' => 'Cập nhật lớp học thành công.']);
     }
@@ -109,4 +137,3 @@ class ClassController extends Controller
         return response()->json(['message' => 'Xóa lớp học thành công.']);
     }
 }
-

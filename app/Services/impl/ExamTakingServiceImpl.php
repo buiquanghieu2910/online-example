@@ -28,6 +28,7 @@ class ExamTakingServiceImpl implements IExamTakingService
             if ($activeExam->status === 'not_started') {
                 $this->userExamRepository->update($activeExam->id, [
                     'started_at' => Carbon::now(),
+                    'remaining_seconds' => $activeExam->remaining_seconds ?? max(0, (int) $exam->duration * 60),
                     'status' => 'in_progress',
                 ]);
                 return $activeExam->fresh();
@@ -40,6 +41,7 @@ class ExamTakingServiceImpl implements IExamTakingService
             'user_id' => $user->id,
             'exam_id' => $exam->id,
             'started_at' => Carbon::now(),
+            'remaining_seconds' => max(0, (int) $exam->duration * 60),
             'status' => 'in_progress',
             'grading_status' => 'auto_graded',
         ]);
@@ -89,6 +91,7 @@ class ExamTakingServiceImpl implements IExamTakingService
         // Update user exam
         $this->userExamRepository->update($userExam->id, [
             'completed_at' => Carbon::now(),
+            'remaining_seconds' => 0,
             'score' => $score,
             'status' => 'completed',
             'grading_status' => $gradingStatus,
@@ -144,12 +147,29 @@ class ExamTakingServiceImpl implements IExamTakingService
             return false;
         }
 
+        if ($userExam->status !== 'completed') {
+            return false;
+        }
+
+        $hasPendingRetake = UserExam::query()
+            ->where('user_id', $userExam->user_id)
+            ->where('exam_id', $userExam->exam_id)
+            ->where('status', 'not_started')
+            ->exists();
+
+        if ($hasPendingRetake) {
+            return true;
+        }
+
+        $durationSeconds = max(0, (int) optional($userExam->exam)->duration * 60);
+
         // Create a NEW record to allow retake (keep old record for history)
         $this->userExamRepository->create([
             'user_id' => $userExam->user_id,
             'exam_id' => $userExam->exam_id,
             'status' => 'not_started',
             'grading_status' => 'auto_graded',
+            'remaining_seconds' => $durationSeconds,
         ]);
 
         return true;
