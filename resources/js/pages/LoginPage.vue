@@ -1,20 +1,25 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
 import Button from 'primevue/button';
+import Popover from 'primevue/popover';
 
 import { useAuthStore } from '../stores/auth';
+import { useThemeStore } from '../stores/theme';
 
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
 const router = useRouter();
 const route = useRoute();
 const toast = useToast();
 
 const loading = ref(false);
+const colorPopover = ref();
+
 const form = reactive({
     username: '',
     password: '',
@@ -24,6 +29,10 @@ const formErrors = reactive({
     username: [],
     password: [],
 });
+
+const themeIcon = computed(() => (themeStore.isDark ? 'pi pi-sun' : 'pi pi-moon'));
+const themeTooltip = computed(() => (themeStore.isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'));
+const primeColorTooltip = computed(() => `Màu chủ đạo hiện tại: ${themeStore.primeColor}`);
 
 function clearFormErrors() {
     formErrors.username = [];
@@ -37,6 +46,18 @@ function applyFormErrors(errors = {}) {
 
 function firstError(field) {
     return formErrors[field]?.[0] || '';
+}
+
+function handleThemeToggle() {
+    themeStore.toggleTheme();
+}
+
+function togglePrimeColorPopover(event) {
+    colorPopover.value?.toggle(event);
+}
+
+function selectPrimeColor(color) {
+    themeStore.setPrimeColor(color);
 }
 
 onMounted(() => {
@@ -67,8 +88,45 @@ async function submit() {
 </script>
 
 <template>
-    <div class="flex min-h-screen items-center justify-center bg-slate-100 px-4 transition-colors dark:bg-slate-950">
-        <Card class="w-full max-w-md shadow-xl">
+    <div
+        class="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-white px-4 transition-colors dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <div class="absolute right-4 top-4 z-10 flex items-center gap-2 rounded-xl border border-slate-200 bg-white/90 p-1.5 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
+            <Button
+                icon="pi pi-palette"
+                :aria-label="primeColorTooltip"
+                v-tooltip.bottom="primeColorTooltip"
+                outlined
+                size="small"
+                class="h-9! w-9! rounded-lg!"
+                @click="togglePrimeColorPopover" />
+            <Button
+                :icon="themeIcon"
+                :aria-label="themeTooltip"
+                v-tooltip.bottom="themeTooltip"
+                outlined
+                size="small"
+                class="h-9! w-9! rounded-lg!"
+                @click="handleThemeToggle" />
+        </div>
+
+        <Popover ref="colorPopover">
+            <div class="w-[220px] space-y-3 p-1">
+                <div class="text-sm font-medium">Chọn màu chủ đạo</div>
+                <div class="grid grid-cols-8 gap-2">
+                    <button
+                        v-for="color in themeStore.primeColorOptions"
+                        :key="color"
+                        type="button"
+                        class="h-6 w-6 rounded-full border-2 transition"
+                        :class="themeStore.primeColor === color ? 'border-slate-900 dark:border-white' : 'border-transparent'"
+                        :style="{ backgroundColor: themeStore.primePaletteMap[color]?.[500] || '#64748b' }"
+                        :aria-label="`Chọn màu ${color}`"
+                        @click="selectPrimeColor(color)" />
+                </div>
+            </div>
+        </Popover>
+
+        <Card class="w-full max-w-md shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/70">
             <template #title>Đăng nhập hệ thống thi trực tuyến</template>
             <template #content>
                 <form class="space-y-4" @submit.prevent="submit">
@@ -88,8 +146,7 @@ async function submit() {
                             autocomplete="current-password"
                             required
                             fluid
-                            :invalid="Boolean(firstError('password'))"
-                        />
+                            :invalid="Boolean(firstError('password'))" />
                         <small v-if="firstError('password')" class="text-red-500">{{ firstError('password') }}</small>
                     </div>
 
