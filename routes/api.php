@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Admin\ClassController as AdminClassController;
 use App\Http\Controllers\Api\Admin\ExamController as AdminExamController;
 use App\Http\Controllers\Api\Admin\GradingController as AdminGradingController;
 use App\Http\Controllers\Api\Admin\MonitorController as AdminMonitorController;
+use App\Http\Controllers\Api\Admin\MaintenanceController as AdminMaintenanceController;
 use App\Http\Controllers\Api\Admin\QuestionController as AdminQuestionController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\Teacher\AttendanceController as TeacherAttendanceController;
@@ -65,6 +66,8 @@ Route::middleware('web')->group(function () {
             Route::post('/grading/{userExam}/reset', [AdminGradingController::class, 'reset']);
             Route::get('/monitor/active-attempts', [AdminMonitorController::class, 'activeAttempts']);
             Route::get('/monitor/active-attempts/{userExam}/timeline', [AdminMonitorController::class, 'timeline']);
+            Route::get('/maintenance', [AdminMaintenanceController::class, 'show']);
+            Route::put('/maintenance', [AdminMaintenanceController::class, 'update']);
         });
 
         Route::prefix('teacher')->middleware('teacher')->group(function () {

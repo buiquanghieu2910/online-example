@@ -177,15 +177,7 @@ onMounted(fetchData);
                                     <span>{{ item.label }}</span>
                                     <span>Lượt thi: {{ item.attempts }} | Điểm TB: {{ formatScore(item.avg_score) }} | Tỷ lệ đạt: {{ formatPercent(item.pass_rate) }}</span>
                                 </div>
-<!--                                <div class="flex items-center justify-between text-[11px] text-slate-500">-->
-<!--                                    <span>Tỷ lệ đạt</span>-->
-<!--                                    <span>{{ formatPercent(item.pass_rate) }}</span>-->
-<!--                                </div>-->
-                                <ProgressBar
-                                    :value="passRatePercent(item)"
-                                    :show-value="false"
-                                    style="height: 0.5rem"
-                                    :pt="{ value: { class: 'bg-emerald-500' } }" />
+                                <ProgressBar :value="passRatePercent(item)" :show-value="false" style="height: 0.5rem" :pt="{ value: { class: 'bg-emerald-500' } }" />
                             </div>
                         </div>
                     </template>
@@ -229,3 +221,4 @@ onMounted(fetchData);
         </template>
     </AppShell>
 </template>
+

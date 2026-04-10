@@ -33,6 +33,7 @@ const menuItems = computed(() => {
             { label: 'Bài thi', icon: 'pi pi-file-edit', to: '/app/admin/exams' },
             { label: 'Chấm bài', icon: 'pi pi-check-square', to: '/app/admin/grading/pending' },
             { label: 'Giám sát thi', icon: 'pi pi-eye', to: '/app/admin/monitor' },
+            { label: 'Cài đặt', icon: 'pi pi-cog', to: '/app/admin/settings' },
         ];
     }
 
@@ -69,9 +70,7 @@ const themeTooltip = computed(() => (themeStore.isDark ? 'Chuyển sang giao di�
 const primeColorTooltip = computed(() => `Màu Prime hiện tại: ${themeStore.primeColor}`);
 
 const initials = computed(() => {
-    if (!authStore.user?.name) {
-        return 'U';
-    }
+    if (!authStore.user?.name) return 'U';
 
     return authStore.user.name
         .split(' ')
@@ -95,9 +94,7 @@ function navigate(path) {
 function handleMenuToggle() {
     if (window.matchMedia('(min-width: 768px)').matches) {
         isDesktopCollapsed.value = !isDesktopCollapsed.value;
-        if (!isDesktopCollapsed.value) {
-            hideTooltip();
-        }
+        if (!isDesktopCollapsed.value) hideTooltip();
         return;
     }
 
@@ -106,9 +103,7 @@ function handleMenuToggle() {
 }
 
 function showTooltip(event, label) {
-    if (!isDesktopCollapsed.value || !window.matchMedia('(min-width: 768px)').matches) {
-        return;
-    }
+    if (!isDesktopCollapsed.value || !window.matchMedia('(min-width: 768px)').matches) return;
 
     const rect = event.currentTarget.getBoundingClientRect();
     tooltip.value = {
@@ -163,10 +158,7 @@ watch(
 
         <aside
             class="fixed inset-y-0 left-0 z-40 transform border-r border-slate-200 bg-white transition-all dark:border-slate-800 dark:bg-slate-900"
-            :class="[
-                isDesktopCollapsed ? 'w-20' : 'w-72',
-                isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
-            ]">
+            :class="[isDesktopCollapsed ? 'w-20' : 'w-72', isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
             <div class="flex h-full flex-col">
                 <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800">
                     <div class="text-lg font-semibold" :class="isDesktopCollapsed ? 'text-center text-sm' : ''">Online Exam</div>
@@ -181,9 +173,7 @@ watch(
                         class="flex items-center rounded-xl text-left text-sm font-medium transition"
                         :class="[
                             isDesktopCollapsed ? 'mx-auto h-11 w-11 justify-center px-0' : 'w-full gap-3 px-3 py-2',
-                            isActive(item.to)
-                                ? 'text-white shadow'
-                                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800',
+                            isActive(item.to) ? 'text-white shadow' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800',
                         ]"
                         :style="isActive(item.to) ? { backgroundColor: 'var(--p-primary-500, #3b82f6)' } : undefined"
                         @mouseenter="showTooltip($event, item.label)"
@@ -249,8 +239,7 @@ watch(
                         class="h-7 w-7 rounded-full border-2 transition"
                         :class="themeStore.primeColor === color ? 'border-slate-900 dark:border-white' : 'border-transparent'"
                         :style="{ backgroundColor: themeStore.primePaletteMap[color]?.[500] || '#64748b' }"
-                        @click="selectPrimeColor(color)"
-                    />
+                        @click="selectPrimeColor(color)" />
                 </div>
             </div>
         </Popover>
@@ -287,8 +276,4 @@ watch(
         </div>
     </div>
 </template>
-
-
-
-
 

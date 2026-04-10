@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         \App\Console\Commands\AutoSubmitExpiredExams::class,
+        \App\Console\Commands\SystemMaintenanceCommand::class,
     ])
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('exams:auto-submit-expired')
@@ -26,6 +27,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'teacher' => \App\Http\Middleware\TeacherMiddleware::class,
             'student' => \App\Http\Middleware\StudentMiddleware::class,
             'user' => \App\Http\Middleware\UserMiddleware::class,
+        ]);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\MaintenanceModeMiddleware::class,
+        ]);
+
+        $middleware->api(append: [
+            \App\Http\Middleware\MaintenanceModeMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

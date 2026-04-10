@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\IMaintenanceModeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public function __construct(private IMaintenanceModeService $maintenanceModeService)
+    {
+    }
+
     public function me(Request $request): JsonResponse
     {
         if (! $request->user()) {
@@ -46,6 +51,17 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        if ($this->maintenanceModeService->isEnabled() && $request->user()?->role !== 'admin') {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return response()->json([
+                'message' => $this->maintenanceModeService->getMessage(),
+                'code' => 'MAINTENANCE_MODE',
+            ], 503);
+        }
+
         return response()->json([
             'data' => [
                 'user' => [
@@ -78,7 +94,6 @@ class AuthController extends Controller
         };
     }
 }
-
 
 
 

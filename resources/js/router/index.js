@@ -15,6 +15,7 @@ import AdminGradingPendingPage from '../pages/admin/AdminGradingPendingPage.vue'
 import AdminGradingExamUsersPage from '../pages/admin/AdminGradingExamUsersPage.vue';
 import AdminGradingDetailPage from '../pages/admin/AdminGradingDetailPage.vue';
 import AdminExamMonitorPage from '../pages/admin/AdminExamMonitorPage.vue';
+import AdminSettingsPage from '../pages/admin/AdminSettingsPage.vue';
 import TeacherClassesPage from '../pages/teacher/TeacherClassesPage.vue';
 import TeacherStudentsPage from '../pages/teacher/TeacherStudentsPage.vue';
 import TeacherExamsPage from '../pages/teacher/TeacherExamsPage.vue';
@@ -196,6 +197,12 @@ const routes = [
         meta: { requiresAuth: true, requiresRole: ['admin'] },
     },
     {
+        path: '/app/admin/settings',
+        name: 'admin-settings',
+        component: AdminSettingsPage,
+        meta: { requiresAuth: true, requiresRole: ['admin'] },
+    },
+    {
         path: '/app/:role(admin|teacher|student)',
         redirect: '/app/dashboard',
     },
@@ -234,6 +241,5 @@ router.beforeEach(async (to) => {
 });
 
 export default router;
-
 
 
